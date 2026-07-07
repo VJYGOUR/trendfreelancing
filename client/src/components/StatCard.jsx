@@ -1,0 +1,41 @@
+export default function StatCard({ title, value }) {
+  return (
+    <div
+      className="
+        bg-white
+        dark:bg-slate-900
+        border
+        border-slate-200
+        dark:border-slate-800
+        rounded-xl
+        shadow-sm
+        p-6
+        transition-colors
+        duration-300
+      "
+    >
+      <p
+        className="
+          text-slate-500
+          dark:text-slate-400
+          text-sm
+          font-medium
+        "
+      >
+        {title}
+      </p>
+
+      <h2
+        className="
+          text-3xl
+          font-bold
+          mt-3
+          text-slate-900
+          dark:text-white
+        "
+      >
+        {value}
+      </h2>
+    </div>
+  );
+}
