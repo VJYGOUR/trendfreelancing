@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "cd ../client && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,8 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.7.4"
+    "mongoose": "^9.7.4",
+    "path": "^0.12.7",
+    "url": "^0.11.4"
   }
 }
