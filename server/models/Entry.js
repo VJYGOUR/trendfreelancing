@@ -44,7 +44,20 @@ const entrySchema = new mongoose.Schema(
       min: 0,
       max: 1000,
     },
+  // NEW FIELDS
+    exercise: {
+      type: Number,
+      min: 0,
+      max: 300, // minutes (max 5 hours)
+      default: 0,
+    },
 
+    meditation: {
+      type: Number,
+      min: 0,
+      max: 120, // minutes (max 2 hours)
+      default: 0,
+    },
     note: {
       type: String,
       default: "",

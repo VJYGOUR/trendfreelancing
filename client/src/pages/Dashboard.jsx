@@ -241,6 +241,13 @@ function getTotalCoding(entries) {
 function getTotalPosts(entries) {
   return entries.reduce((sum, e) => sum + safeNumber(e.post), 0);
 }
+function getTotalExercise(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.exercise), 0);
+}
+
+function getTotalMeditation(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.meditation), 0);
+}
 
 // ==========================
 // Utility Functions
@@ -440,6 +447,8 @@ export default function Dashboard() {
       coding: entry.coding || 0,
       post: entry.post || 0,
       bookPage: entry.bookPage || 0,
+      exercise: entry.exercise || 0, // ✅ ADD THIS
+      meditation: entry.meditation || 0, // ✅ ADD THIS
       note: entry.note || "",
     });
   }, []);
@@ -568,6 +577,8 @@ export default function Dashboard() {
         coding: 0,
         post: 0,
         bookPage: 0,
+        exercise: 0, // ✅ ADD
+        meditation: 0,
       }));
     }
 
@@ -597,6 +608,8 @@ export default function Dashboard() {
           coding: 0,
           post: 0,
           bookPage: 0,
+          exercise: 0, // ✅ ADD THIS
+          meditation: 0,
           count: 0,
         };
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -614,6 +627,8 @@ export default function Dashboard() {
           groups[monthKey].coding += safeNumber(entry.coding);
           groups[monthKey].post += safeNumber(entry.post);
           groups[monthKey].bookPage += safeNumber(entry.bookPage);
+          groups[monthKey].exercise += safeNumber(entry.exercise); // ✅ ADD
+          groups[monthKey].meditation += safeNumber(entry.meditation);
           groups[monthKey].count++;
         }
       });
@@ -631,6 +646,8 @@ export default function Dashboard() {
             coding: 0,
             post: 0,
             bookPage: 0,
+            exercise: 0, // ✅ ADD
+            meditation: 0,
             count: 0,
           };
         }
@@ -641,6 +658,8 @@ export default function Dashboard() {
         groups[label].coding += safeNumber(entry.coding);
         groups[label].post += safeNumber(entry.post);
         groups[label].bookPage += safeNumber(entry.bookPage);
+        groups[label].exercise += safeNumber(entry.exercise); // ✅ ADD
+        groups[label].meditation += safeNumber(entry.meditation);
         groups[label].count++;
       });
     }
@@ -756,23 +775,18 @@ export default function Dashboard() {
           coding: 0,
           post: 0,
           bookPage: 0,
+          exercise: 0, // ✅ ADD
+          meditation: 0,
         };
       }
 
       return {
         ...groups[label],
-        coding:
-          groups[label].count > 0
-            ? +(groups[label].coding / groups[label].count).toFixed(1)
-            : 0,
-        post:
-          groups[label].count > 0
-            ? +(groups[label].post / groups[label].count).toFixed(1)
-            : 0,
-        bookPage:
-          groups[label].count > 0
-            ? +(groups[label].bookPage / groups[label].count).toFixed(1)
-            : 0,
+        coding: +groups[label].coding.toFixed(1), // ✅ SUM - not average
+        post: +groups[label].post.toFixed(1), // ✅ SUM - not average
+        bookPage: +groups[label].bookPage.toFixed(1), // ✅ SUM - not average
+        exercise: +groups[label].exercise.toFixed(1), // ✅ SUM - not average
+        meditation: +groups[label].meditation.toFixed(1),
       };
     });
   }, [filteredEntries, timeRange]);
@@ -821,6 +835,8 @@ export default function Dashboard() {
         coding: acc.coding + safeNumber(entry.coding),
         post: acc.post + safeNumber(entry.post),
         bookPage: acc.bookPage + safeNumber(entry.bookPage),
+        exercise: acc.exercise + safeNumber(entry.exercise), // ✅ ADD
+        meditation: acc.meditation + safeNumber(entry.meditation),
         count: acc.count + 1,
       }),
       {
@@ -830,6 +846,8 @@ export default function Dashboard() {
         coding: 0,
         post: 0,
         bookPage: 0,
+        exercise: 0, // ✅ ADD
+        meditation: 0,
         count: 0,
       },
     );
@@ -902,6 +920,8 @@ export default function Dashboard() {
       totalPost: totals.post,
       totalCoding: totals.coding,
       totalbookPage: totals.bookPage,
+      totalExercise: totals.exercise, // ✅ ADD
+      totalMeditation: totals.meditation,
       bestDay,
       daysWithData,
       totalDays,
@@ -1022,8 +1042,8 @@ export default function Dashboard() {
         coding: acc.coding + safeNumber(entry.coding),
         post: acc.post + safeNumber(entry.post),
         bookPage: acc.bookPage + safeNumber(entry.bookPage),
-        exercise: safeNumber(entry.exercise) || 0,
-        meditate: safeNumber(entry.meditate) || 0,
+        exercise: acc.exercise + safeNumber(entry.exercise), // ✅ FIXED - adds to accumulator
+        meditation: acc.meditation + safeNumber(entry.meditation),
         meetings: safeNumber(entry.meetings) || 0,
         content: safeNumber(entry.content) || 0,
       }),
@@ -1035,7 +1055,7 @@ export default function Dashboard() {
         post: 0,
         bookPage: 0,
         exercise: 0,
-        meditate: 0,
+        meditation: 0,
         meetings: 0,
         content: 0,
       },
@@ -1091,9 +1111,9 @@ export default function Dashboard() {
         label: getTimeLabel("🏋️ Exercise"),
       },
       meditateGoal: {
-        achieved: totals.meditate,
+        achieved: totals.meditation, // ✅ FIXED - was totals.meditate
         target: meditateTarget,
-        progress: calculateProgress(totals.meditate, meditateTarget),
+        progress: calculateProgress(totals.meditation, meditateTarget),
         label: getTimeLabel("🧘 Meditation"),
       },
       postsGoal: {
@@ -1305,6 +1325,8 @@ export default function Dashboard() {
         "coding",
         "post",
         "bookPage",
+        "exercise", // ✅ ADD
+        "meditation", // ✅ ADD
         "Note",
       ];
       const csvRows = [
@@ -1312,6 +1334,7 @@ export default function Dashboard() {
         ...filteredEntries.map((entry) => {
           const date = entry.date ? formatDate(entry.date) : "";
           const note = (entry.note || "").replace(/"/g, '""');
+
           return [
             date,
             safeNumber(entry.revenue),
@@ -1320,6 +1343,8 @@ export default function Dashboard() {
             safeNumber(entry.coding),
             safeNumber(entry.post),
             safeNumber(entry.bookPage),
+            safeNumber(entry.exercise), // ✅ ADD
+            safeNumber(entry.meditation), // ✅ ADD
             `"${note}"`,
           ].join(",");
         }),
@@ -1939,7 +1964,16 @@ export default function Dashboard() {
           title="Highest Revenue"
           value={`₹${metrics.highestRevenue}`}
         />
-
+        <StatCard
+          title="Total Exercise"
+          value={`${metrics.totalExercise} min`}
+        />{" "}
+        {/* ✅ ADD */}
+        <StatCard
+          title="Total Meditation"
+          value={`${metrics.totalMeditation} min`}
+        />{" "}
+        {/* ✅ ADD */}
         {timeRange === "today" || timeRange === "week" ? (
           <StatCard title="Pages Read" value={`${metrics.totalbookPage} 📄`} />
         ) : (
@@ -1948,7 +1982,6 @@ export default function Dashboard() {
             value={`${getBooksFromPages(metrics.totalbookPage).books} 📚`}
           />
         )}
-
         <StatCard title="Total Post" value={metrics.totalPost} />
         <StatCard title="Performance" value={`${performanceScore}%`} />
       </div>
@@ -2056,6 +2089,18 @@ export default function Dashboard() {
             title="Post Trend"
             data={chartData}
             dataKey="post"
+            xAxisKey="label"
+          />
+          <TrendChart
+            title="Exercise Trend" // ✅ ADD
+            data={chartData}
+            dataKey="exercise"
+            xAxisKey="label"
+          />
+          <TrendChart
+            title="Meditation Trend" // ✅ ADD
+            data={chartData}
+            dataKey="meditation"
             xAxisKey="label"
           />
           <TrendChart
@@ -2204,6 +2249,35 @@ export default function Dashboard() {
                           className="w-full p-3 border-2 rounded-xl text-base"
                         />
                       </div>
+                      {/* Add after the Pages Read field */}
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Exercise (min)
+                        </label>
+                        <input
+                          type="number"
+                          name="exercise"
+                          value={editFormData?.exercise || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                          min="0"
+                          max="300"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Meditation (min)
+                        </label>
+                        <input
+                          type="number"
+                          name="meditation"
+                          value={editFormData?.meditation || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                          min="0"
+                          max="120"
+                        />
+                      </div>
                       <div className="col-span-2">
                         <label className="text-sm font-medium block mb-1">
                           Note
@@ -2260,6 +2334,14 @@ export default function Dashboard() {
                       </p>
                       <p>
                         <strong>Pages:</strong> {safeNumber(entry.bookPage)}
+                      </p>
+                      <p>
+                        <strong>Exercise:</strong> {safeNumber(entry.exercise)}{" "}
+                        min
+                      </p>
+                      <p>
+                        <strong>Meditation:</strong>{" "}
+                        {safeNumber(entry.meditation)} min
                       </p>
                     </div>
 

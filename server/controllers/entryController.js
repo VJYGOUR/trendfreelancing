@@ -2,8 +2,18 @@ import Entry from "../models/Entry.js";
 
 export const createEntry = async (req, res) => {
   try {
-    const { date, leads, clients, revenue, coding, post, bookPage, note } =
-      req.body;
+    const {
+      date,
+      leads,
+      clients,
+      revenue,
+      coding,
+      post,
+      bookPage,
+      exercise,
+      meditation,
+      note,
+    } = req.body;
     console.log(leads);
     const userId = req.userId;
     console.log("-----", userId);
@@ -16,9 +26,11 @@ export const createEntry = async (req, res) => {
       coding,
       post,
       bookPage,
+      exercise: exercise || 0,
+      meditation: meditation || 0,
       note,
     });
-
+    console.log(entry);
     res.status(201).json(entry);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -30,7 +42,7 @@ export const getEntries = async (req, res) => {
     const entries = await Entry.find({
       userId: req.userId,
     }).sort({ date: -1 });
-
+    console.log(entries);
     res.json(entries);
   } catch (error) {
     res.status(500).json({
@@ -67,7 +79,17 @@ export const deleteEntry = async (req, res) => {
 export const updateEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    const { leads, clients, revenue, coding, post, bookPage, note } = req.body;
+    const {
+      leads,
+      clients,
+      revenue,
+      coding,
+      post,
+      bookPage,
+      exercise,
+      meditation,
+      note,
+    } = req.body;
 
     const entry = await Entry.findOne({
       _id: id,
@@ -87,6 +109,8 @@ export const updateEntry = async (req, res) => {
     if (coding !== undefined) entry.coding = coding;
     if (post !== undefined) entry.post = post;
     if (bookPage !== undefined) entry.bookPage = bookPage;
+    if (exercise !== undefined) entry.exercise = exercise;
+    if (meditation !== undefined) entry.meditation = meditation;
     if (note !== undefined) entry.note = note;
 
     await entry.save();

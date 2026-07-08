@@ -12,9 +12,11 @@ export default function NewEntry() {
     leads: 0,
     clients: 0,
     revenue: 0,
-    coding: 5,
-    post: 5,
-    bookPage: 5,
+    coding: 0,
+    post: 0,
+    bookPage: 0,
+    exercise: 0,
+    meditation: 0,
     note: "",
   });
 
@@ -148,15 +150,16 @@ export default function NewEntry() {
             />
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelStyle}>coding (1-10)</label>
+              <label className={labelStyle}>Coding (Hours)</label>
 
               <input
                 type="number"
                 name="coding"
                 min="0"
                 max="10"
+                step="0.5"
                 value={formData.coding}
                 onChange={handleChange}
                 className={inputStyle}
@@ -164,7 +167,7 @@ export default function NewEntry() {
             </div>
 
             <div>
-              <label className={labelStyle}>post (1-10)</label>
+              <label className={labelStyle}>Post (Count)</label>
 
               <input
                 type="number"
@@ -176,9 +179,11 @@ export default function NewEntry() {
                 className={inputStyle}
               />
             </div>
+          </div>
 
+          <div className="grid sm:grid-cols-3 gap-4">
             <div>
-              <label className={labelStyle}>bookPage (1-10)</label>
+              <label className={labelStyle}>Pages Read</label>
 
               <input
                 type="number"
@@ -186,6 +191,34 @@ export default function NewEntry() {
                 min="0"
                 max="1000"
                 value={formData.bookPage}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label className={labelStyle}>Exercise (Minutes)</label>
+
+              <input
+                type="number"
+                name="exercise"
+                min="0"
+                max="300"
+                value={formData.exercise}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label className={labelStyle}>Meditation (Minutes)</label>
+
+              <input
+                type="number"
+                name="meditation"
+                min="0"
+                max="120"
+                value={formData.meditation}
                 onChange={handleChange}
                 className={inputStyle}
               />
