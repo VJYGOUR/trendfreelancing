@@ -38,10 +38,13 @@ const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const RANGES = [
   { value: "today", label: "Today", full: "Today" },
   { value: "week", label: "7D", full: "Last 7 Days" },
-  { value: "month", label: "1M", full: "Last Month" },
+  { value: "month", label: "30D", full: "Last 30 Days" },
+  { value: "thisMonth", label: "Month", full: "This Month" },
   { value: "quarter", label: "3M", full: "Last Quarter" },
   { value: "sixMonths", label: "6M", full: "Last 6 Months" },
   { value: "year", label: "1Y", full: "Last Year" },
+  { value: "thisYear", label: "Year", full: "This Year" },
+  { value: "myYear", label: "My Year", full: "My Year (365 Days)" },
   { value: "all", label: "All", full: "All Time" },
 ];
 
@@ -176,13 +179,9 @@ const BADGES = [
 ];
 
 // Helper functions for badges
-// ==========================
-// Helper functions for badges
-// ==========================
 function getStreak(entries) {
   if (!entries || entries.length === 0) return 0;
 
-  // Get unique dates and sort them (newest first)
   const dates = entries
     .filter((e) => e && e.date)
     .map((e) => new Date(e.date).toDateString())
@@ -191,31 +190,25 @@ function getStreak(entries) {
 
   if (dates.length === 0) return 0;
 
-  // Get today and yesterday
   const today = new Date().toDateString();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toDateString();
 
-  // Check if today or yesterday has entries
   const hasToday = dates.includes(today);
   const hasYesterday = dates.includes(yesterdayStr);
 
-  // If neither today nor yesterday has entries, streak is 0
   if (!hasToday && !hasYesterday) {
     return 0;
   }
 
-  // Start counting from the most recent date (today or yesterday)
   let streak = 0;
   let currentDate = new Date();
 
-  // If today doesn't have entry, start from yesterday
   if (!hasToday) {
     currentDate.setDate(currentDate.getDate() - 1);
   }
 
-  // Check consecutive days going backwards
   while (true) {
     const dateStr = currentDate.toDateString();
     if (dates.includes(dateStr)) {
@@ -264,12 +257,26 @@ function isWithinRange(date, range) {
       return diff <= 7;
     case "month":
       return diff <= 30;
+    case "thisMonth": {
+      const targetMonth = targetDate.getMonth();
+      const targetYear = targetDate.getFullYear();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      return targetMonth === currentMonth && targetYear === currentYear;
+    }
     case "quarter":
       return diff <= 90;
     case "sixMonths":
       return diff <= 180;
     case "year":
       return diff <= 365;
+    case "thisYear": {
+      return targetDate.getFullYear() === today.getFullYear();
+    }
+    case "myYear": {
+      // Show entries from first entry date to 365 days later
+      return true; // Filtered by date range in filteredEntries
+    }
     default:
       return true;
   }
@@ -301,7 +308,9 @@ function getDateLabel(date, timeRange) {
       return "Today";
     case "week":
       return WEEK_DAYS[d.getDay()];
-    case "month": {
+    case "month":
+    case "thisMonth":
+    case "myYear": {
       const day = d.getDate();
       const month = MONTHS[d.getMonth()];
       return `${day} ${month}`;
@@ -309,6 +318,7 @@ function getDateLabel(date, timeRange) {
     case "quarter":
     case "sixMonths":
     case "year":
+    case "thisYear":
       return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
     default:
       return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
@@ -480,6 +490,24 @@ export default function Dashboard() {
   const filteredEntries = useMemo(() => {
     if (!Array.isArray(entries) || entries.length === 0) return [];
     if (timeRange === "all") return entries;
+    if (timeRange === "myYear") {
+      // Get first entry date
+      const sortedEntries = [...entries]
+        .filter((entry) => entry && entry.date)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (sortedEntries.length === 0) return [];
+
+      const firstDate = new Date(sortedEntries[0].date);
+      const endDate = new Date(firstDate);
+      endDate.setFullYear(endDate.getFullYear() + 1); // 365 days later
+
+      return entries.filter((entry) => {
+        if (!entry || !entry.date) return false;
+        const entryDate = new Date(entry.date);
+        return entryDate >= firstDate && entryDate <= endDate;
+      });
+    }
     return entries.filter(
       (entry) => entry && entry.date && isWithinRange(entry.date, timeRange),
     );
@@ -495,13 +523,36 @@ export default function Dashboard() {
         case "week":
           defaultLabels = WEEK_DAYS;
           break;
-        case "month": {
+        case "month":
+        case "thisMonth": {
           const today = new Date();
           const labels = [];
-          for (let i = 29; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            labels.push(`${date.getDate()} ${MONTHS[date.getMonth()]}`);
+          const daysInMonth = new Date(
+            today.getFullYear(),
+            today.getMonth() + 1,
+            0,
+          ).getDate();
+          for (let i = 1; i <= daysInMonth; i++) {
+            labels.push(`${i} ${MONTHS[today.getMonth()]}`);
+          }
+          defaultLabels = labels;
+          break;
+        }
+        case "thisYear": {
+          const today = new Date();
+          const labels = [];
+          for (let i = 0; i <= today.getMonth(); i++) {
+            labels.push(MONTHS[i]);
+          }
+          defaultLabels = labels;
+          break;
+        }
+        case "myYear": {
+          // For empty data, show months from current month forward
+          const today = new Date();
+          const labels = [];
+          for (let i = 0; i < 12; i++) {
+            labels.push(MONTHS[i]);
           }
           defaultLabels = labels;
           break;
@@ -526,14 +577,20 @@ export default function Dashboard() {
         return new Date(a.date) - new Date(b.date);
       });
 
-    const groups = {};
+    let groups = {};
 
-    sortedEntries.forEach((entry) => {
-      const label = getDateLabel(entry.date, timeRange);
+    // For "myYear", we need special handling to show months from first entry
+    if (timeRange === "myYear") {
+      const firstDate = new Date(sortedEntries[0].date);
+      const endDate = new Date(firstDate);
+      endDate.setFullYear(endDate.getFullYear() + 1);
 
-      if (!groups[label]) {
-        groups[label] = {
-          label,
+      // Initialize all months with 0 values
+      let currentDate = new Date(firstDate);
+      while (currentDate <= endDate) {
+        const monthKey = `${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+        groups[monthKey] = {
+          label: monthKey,
           revenue: 0,
           leads: 0,
           clients: 0,
@@ -542,16 +599,51 @@ export default function Dashboard() {
           bookPage: 0,
           count: 0,
         };
+        currentDate.setMonth(currentDate.getMonth() + 1);
       }
 
-      groups[label].revenue += safeNumber(entry.revenue);
-      groups[label].leads += safeNumber(entry.leads);
-      groups[label].clients += safeNumber(entry.clients);
-      groups[label].coding += safeNumber(entry.coding);
-      groups[label].post += safeNumber(entry.post);
-      groups[label].bookPage += safeNumber(entry.bookPage);
-      groups[label].count++;
-    });
+      // Fill in actual data
+      sortedEntries.forEach((entry) => {
+        const d = new Date(entry.date);
+        const monthKey = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+        if (groups[monthKey]) {
+          groups[monthKey].revenue += safeNumber(entry.revenue);
+          groups[monthKey].leads += safeNumber(entry.leads);
+          groups[monthKey].clients += safeNumber(entry.clients);
+          groups[monthKey].coding += safeNumber(entry.coding);
+          groups[monthKey].post += safeNumber(entry.post);
+          groups[monthKey].bookPage += safeNumber(entry.bookPage);
+          groups[monthKey].count++;
+        }
+      });
+    } else {
+      // Original grouping logic for other views
+      sortedEntries.forEach((entry) => {
+        const label = getDateLabel(entry.date, timeRange);
+
+        if (!groups[label]) {
+          groups[label] = {
+            label,
+            revenue: 0,
+            leads: 0,
+            clients: 0,
+            coding: 0,
+            post: 0,
+            bookPage: 0,
+            count: 0,
+          };
+        }
+
+        groups[label].revenue += safeNumber(entry.revenue);
+        groups[label].leads += safeNumber(entry.leads);
+        groups[label].clients += safeNumber(entry.clients);
+        groups[label].coding += safeNumber(entry.coding);
+        groups[label].post += safeNumber(entry.post);
+        groups[label].bookPage += safeNumber(entry.bookPage);
+        groups[label].count++;
+      });
+    }
 
     let labels = [];
 
@@ -564,20 +656,25 @@ export default function Dashboard() {
         labels = WEEK_DAYS;
         break;
       }
-      case "month": {
+      case "month":
+      case "thisMonth": {
         const today = new Date();
         const labelsList = [];
-        for (let i = 29; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          labelsList.push(`${date.getDate()} ${MONTHS[date.getMonth()]}`);
+        const daysInMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          0,
+        ).getDate();
+        for (let i = 1; i <= daysInMonth; i++) {
+          labelsList.push(`${i} ${MONTHS[today.getMonth()]}`);
         }
         labels = labelsList;
         break;
       }
       case "quarter":
       case "sixMonths":
-      case "year": {
+      case "year":
+      case "thisYear": {
         const uniqueLabels = [
           ...new Set(
             sortedEntries.map((e) => {
@@ -594,6 +691,18 @@ export default function Dashboard() {
           const dateB = new Date(`${monthB} 1, ${yearB}`);
           return dateA - dateB;
         });
+        break;
+      }
+      case "myYear": {
+        // Get all month keys from groups and sort them
+        const monthKeys = Object.keys(groups).sort((a, b) => {
+          const [monthA, yearA] = a.split(" ");
+          const [monthB, yearB] = b.split(" ");
+          const dateA = new Date(`${monthA} 1, ${yearA}`);
+          const dateB = new Date(`${monthB} 1, ${yearB}`);
+          return dateA - dateB;
+        });
+        labels = monthKeys;
         break;
       }
       default: {
@@ -749,12 +858,38 @@ export default function Dashboard() {
       totalDays = 7;
     } else if (timeRange === "month") {
       totalDays = 30;
+    } else if (timeRange === "thisMonth") {
+      const today = new Date();
+      totalDays = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+      ).getDate();
     } else if (timeRange === "quarter") {
       totalDays = 90;
     } else if (timeRange === "sixMonths") {
       totalDays = 180;
     } else if (timeRange === "year") {
       totalDays = 365;
+    } else if (timeRange === "thisYear") {
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const diffTime = today - startOfYear;
+      totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    } else if (timeRange === "myYear") {
+      const sortedEntries = [...filteredEntries]
+        .filter((entry) => entry && entry.date)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (sortedEntries.length > 0) {
+        const firstDate = new Date(sortedEntries[0].date);
+        const endDate = new Date(firstDate);
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        const diffTime = endDate - firstDate;
+        totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      } else {
+        totalDays = 365;
+      }
     } else {
       totalDays = daysWithData;
     }
@@ -814,6 +949,15 @@ export default function Dashboard() {
       daysInRange = 30;
       weeksInRange = 4.28;
       monthsInRange = 1;
+    } else if (timeRange === "thisMonth") {
+      const today = new Date();
+      daysInRange = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+      ).getDate();
+      weeksInRange = daysInRange / 7;
+      monthsInRange = 1;
     } else if (timeRange === "quarter") {
       daysInRange = 90;
       weeksInRange = 12.86;
@@ -826,6 +970,31 @@ export default function Dashboard() {
       daysInRange = 365;
       weeksInRange = 52.14;
       monthsInRange = 12;
+    } else if (timeRange === "thisYear") {
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const diffTime = today - startOfYear;
+      daysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      weeksInRange = daysInRange / 7;
+      monthsInRange = today.getMonth() + 1;
+    } else if (timeRange === "myYear") {
+      const sortedEntries = [...validEntries]
+        .filter((entry) => entry && entry.date)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (sortedEntries.length > 0) {
+        const firstDate = new Date(sortedEntries[0].date);
+        const endDate = new Date(firstDate);
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        const diffTime = endDate - firstDate;
+        daysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        weeksInRange = daysInRange / 7;
+        monthsInRange = daysInRange / 30;
+      } else {
+        daysInRange = 365;
+        weeksInRange = 52.14;
+        monthsInRange = 12;
+      }
     } else if (timeRange === "all") {
       if (validEntries.length > 0) {
         const firstDate = new Date(validEntries[0].date);
@@ -891,10 +1060,13 @@ export default function Dashboard() {
     const getTimeLabel = (baseLabel) => {
       if (timeRange === "today") return `${baseLabel} (Today)`;
       if (timeRange === "week") return `${baseLabel} (Week)`;
-      if (timeRange === "month") return `${baseLabel} (Month)`;
+      if (timeRange === "month") return `${baseLabel} (30 Days)`;
+      if (timeRange === "thisMonth") return `${baseLabel} (This Month)`;
       if (timeRange === "quarter") return `${baseLabel} (Quarter)`;
       if (timeRange === "sixMonths") return `${baseLabel} (6 Months)`;
       if (timeRange === "year") return `${baseLabel} (Year)`;
+      if (timeRange === "thisYear") return `${baseLabel} (This Year)`;
+      if (timeRange === "myYear") return `${baseLabel} (My Year)`;
       if (timeRange === "all") return `${baseLabel} (All Time)`;
       return baseLabel;
     };
@@ -970,7 +1142,7 @@ export default function Dashboard() {
   }, [filteredEntries, timeRange]);
 
   // ==========================
-  // Streak Calculation - Fixed
+  // Streak Calculation
   // ==========================
   const streak = useMemo(() => {
     if (!entries || entries.length === 0) return 0;
@@ -978,7 +1150,7 @@ export default function Dashboard() {
   }, [entries]);
 
   // ==========================
-  // Achievement Badges - Fixed (only show when achieved)
+  // Achievement Badges
   // ==========================
   const earnedBadges = useMemo(() => {
     if (!entries || entries.length === 0) return [];
@@ -1210,7 +1382,7 @@ export default function Dashboard() {
   }
 
   // ==========================
-  // Main Render - BIGGER, CLEANER UI
+  // Main Render
   // ==========================
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -1331,8 +1503,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ====== STREAK COUNTER - Fixed ====== */}
-      {/* ====== STREAK COUNTER - Fixed with break/restart ====== */}
+      {/* ====== STREAK COUNTER ====== */}
       {entries.length > 0 && (
         <div className="mb-6 rounded-2xl border-2 p-6 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 shadow-sm">
           <div className="flex items-center justify-between">
@@ -1360,7 +1531,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ====== ACHIEVEMENT BADGES - Only show when earned ====== */}
+      {/* ====== ACHIEVEMENT BADGES ====== */}
       {earnedBadges.length > 0 && (
         <div className="mb-6 rounded-2xl border p-6 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 shadow-sm">
           <h3 className="text-xl font-bold mb-4">🏅 Achievements</h3>
@@ -1382,7 +1553,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ====== GOALS SECTION - Always show all goals ====== */}
+      {/* ====== GOALS SECTION ====== */}
       <div className="mb-12">
         <h2 className="text-3xl font-bold mb-6">
           🎯 Goals
