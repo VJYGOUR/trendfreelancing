@@ -11,13 +11,13 @@ import { calculateTrend, calculateBusinessHealth } from "../utils/trend";
 // ==========================
 // Constants
 // ==========================
-// Add this after the safeNumber function (around line 80)
 function getBooksFromPages(pages) {
   const BOOK_PAGES = 300;
   const books = Math.floor(pages / BOOK_PAGES);
   const remainingPages = pages % BOOK_PAGES;
   return { books, remainingPages };
 }
+
 const MONTHS = [
   "Jan",
   "Feb",
@@ -36,6 +36,7 @@ const MONTHS = [
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const RANGES = [
+  { value: "today", label: "Today", full: "Today" },
   { value: "week", label: "7D", full: "Last 7 Days" },
   { value: "month", label: "1M", full: "Last Month" },
   { value: "quarter", label: "3M", full: "Last Quarter" },
@@ -49,10 +50,12 @@ const RANGES = [
 // ==========================
 function isWithinRange(date, range) {
   const today = new Date();
-  const diff =
-    (today.getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24);
+  const targetDate = new Date(date);
+  const diff = (today.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24);
 
   switch (range) {
+    case "today":
+      return targetDate.toDateString() === today.toDateString();
     case "week":
       return diff <= 7;
     case "month":
@@ -90,17 +93,15 @@ function getDateLabel(date, timeRange) {
   const d = new Date(date);
 
   switch (timeRange) {
+    case "today":
+      return "Today";
     case "week":
       return WEEK_DAYS[d.getDay()];
     case "month": {
+      // Show actual day and month for better granularity
       const day = d.getDate();
       const month = MONTHS[d.getMonth()];
-
-      if (day <= 7) return `1-7 ${month}`;
-      if (day <= 14) return `8-14 ${month}`;
-      if (day <= 21) return `15-21 ${month}`;
-      if (day <= 28) return `22-28 ${month}`;
-      return `29-31 ${month}`;
+      return `${day} ${month}`;
     }
     case "quarter":
     case "sixMonths":
@@ -228,18 +229,22 @@ export default function Dashboard() {
       // Return empty chart data with default labels based on timeRange
       let defaultLabels = [];
       switch (timeRange) {
+        case "today":
+          defaultLabels = ["Today"];
+          break;
         case "week":
           defaultLabels = WEEK_DAYS;
           break;
         case "month": {
-          const month = MONTHS[new Date().getMonth()];
-          defaultLabels = [
-            `1-7 ${month}`,
-            `8-14 ${month}`,
-            `15-21 ${month}`,
-            `22-28 ${month}`,
-            `29-31 ${month}`,
-          ];
+          // For month view, show last 30 days
+          const today = new Date();
+          const labels = [];
+          for (let i = 29; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            labels.push(`${date.getDate()} ${MONTHS[date.getMonth()]}`);
+          }
+          defaultLabels = labels;
           break;
         }
         default:
@@ -293,32 +298,24 @@ export default function Dashboard() {
     let labels = [];
 
     switch (timeRange) {
+      case "today": {
+        labels = ["Today"];
+        break;
+      }
       case "week": {
         labels = WEEK_DAYS;
         break;
       }
       case "month": {
-        const month = new Date().getMonth();
-        const monthName = MONTHS[month];
-        const dayRanges = [
-          `1-7 ${monthName}`,
-          `8-14 ${monthName}`,
-          `15-21 ${monthName}`,
-          `22-28 ${monthName}`,
-          `29-31 ${monthName}`,
-        ];
-
-        // Only show ranges that have data or keep all for consistency
-        const existingRanges = Object.keys(groups);
-        labels = dayRanges.filter(
-          (range) =>
-            existingRanges.includes(range) || existingRanges.length === 0,
-        );
-
-        // If no ranges have data, show all
-        if (labels.length === 0) {
-          labels = dayRanges;
+        // Show last 30 days
+        const today = new Date();
+        const labelsList = [];
+        for (let i = 29; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(date.getDate() - i);
+          labelsList.push(`${date.getDate()} ${MONTHS[date.getMonth()]}`);
         }
+        labels = labelsList;
         break;
       }
       case "quarter":
@@ -661,7 +658,7 @@ export default function Dashboard() {
           ))}
         </div>
         <div className="grid xl:grid-cols-2 gap-8 my-12">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div
               key={i}
               className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl"
@@ -771,10 +768,17 @@ export default function Dashboard() {
           title="Highest Revenue"
           value={`₹${metrics.highestRevenue}`}
         />
-        <StatCard
-          title="Books Read"
-          value={`${getBooksFromPages(metrics.totalbookPage).books} 📚`}
-        />
+
+        {/* Dynamic Book/Page Display */}
+        {timeRange === "today" || timeRange === "week" ? (
+          <StatCard title="Pages Read" value={`${metrics.totalbookPage} 📄`} />
+        ) : (
+          <StatCard
+            title="Books Read"
+            value={`${getBooksFromPages(metrics.totalbookPage).books} 📚`}
+          />
+        )}
+
         <StatCard title="Total Post" value={metrics.totalPost} />
         <StatCard title="Performance" value={`${performanceScore}%`} />
       </div>
@@ -820,15 +824,19 @@ export default function Dashboard() {
                 </h3>
               </div>
               <div>
-                Leads
+                {timeRange === "today" || timeRange === "week"
+                  ? "Pages"
+                  : "Coding"}
                 <h3 className="font-bold">
-                  {safeNumber(metrics.bestDay.leads)}
+                  {timeRange === "today" || timeRange === "week"
+                    ? safeNumber(metrics.bestDay.bookPage)
+                    : safeNumber(metrics.bestDay.coding)}
                 </h3>
               </div>
               <div>
-                Coding
+                Post
                 <h3 className="font-bold">
-                  {safeNumber(metrics.bestDay.coding)}
+                  {safeNumber(metrics.bestDay.post)}
                 </h3>
               </div>
             </div>
@@ -874,6 +882,16 @@ export default function Dashboard() {
             title="Post Trend"
             data={chartData}
             dataKey="post"
+            xAxisKey="label"
+          />
+          <TrendChart
+            title={
+              timeRange === "today" || timeRange === "week"
+                ? "Pages Read Trend"
+                : "Books Read Trend"
+            }
+            data={chartData}
+            dataKey="bookPage"
             xAxisKey="label"
           />
         </div>
@@ -928,7 +946,7 @@ export default function Dashboard() {
                     <strong>Clients:</strong> {safeNumber(entry.clients)}
                   </p>
                   <p>
-                    <strong>Coding:</strong> {safeNumber(entry.coding)}
+                    <strong>Coding:</strong> {safeNumber(entry.coding)} hrs
                   </p>
                   <p>
                     <strong>Post:</strong> {safeNumber(entry.post)}
