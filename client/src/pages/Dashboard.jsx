@@ -46,6 +46,24 @@ const RANGES = [
 ];
 
 // ==========================
+// Goals Configuration
+// ==========================
+const GOALS = {
+  daily: {
+    pages: 10, // Read 10 pages daily
+    coding: 2, // Code 2 hours daily
+  },
+  weekly: {
+    posts: 2, // 2 social media posts weekly
+  },
+  monthly: {
+    revenue: 5000, // ₹5,000 monthly revenue
+    clients: 2, // 2 new clients monthly (UPDATED)
+    leads: 5, // 5 new leads monthly
+  },
+};
+
+// ==========================
 // Utility Functions
 // ==========================
 function isWithinRange(date, range) {
@@ -98,7 +116,6 @@ function getDateLabel(date, timeRange) {
     case "week":
       return WEEK_DAYS[d.getDay()];
     case "month": {
-      // Show actual day and month for better granularity
       const day = d.getDate();
       const month = MONTHS[d.getMonth()];
       return `${day} ${month}`;
@@ -155,7 +172,6 @@ export default function Dashboard() {
         },
       });
 
-      // Ensure entries is always an array
       setEntries(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch entries:", err);
@@ -226,7 +242,6 @@ export default function Dashboard() {
 
   const chartData = useMemo(() => {
     if (!Array.isArray(filteredEntries) || filteredEntries.length === 0) {
-      // Return empty chart data with default labels based on timeRange
       let defaultLabels = [];
       switch (timeRange) {
         case "today":
@@ -236,7 +251,6 @@ export default function Dashboard() {
           defaultLabels = WEEK_DAYS;
           break;
         case "month": {
-          // For month view, show last 30 days
           const today = new Date();
           const labels = [];
           for (let i = 29; i >= 0; i--) {
@@ -261,7 +275,6 @@ export default function Dashboard() {
       }));
     }
 
-    // Sort entries chronologically
     const sortedEntries = [...filteredEntries]
       .filter((entry) => entry && entry.date)
       .sort((a, b) => {
@@ -307,7 +320,6 @@ export default function Dashboard() {
         break;
       }
       case "month": {
-        // Show last 30 days
         const today = new Date();
         const labelsList = [];
         for (let i = 29; i >= 0; i--) {
@@ -425,6 +437,8 @@ export default function Dashboard() {
         totalCoding: 0,
         totalbookPage: 0,
         bestDay: null,
+        daysWithData: 0,
+        totalDays: 0,
       };
     }
 
@@ -440,6 +454,8 @@ export default function Dashboard() {
         totalCoding: 0,
         totalbookPage: 0,
         bestDay: null,
+        daysWithData: 0,
+        totalDays: 0,
       };
     }
 
@@ -476,6 +492,30 @@ export default function Dashboard() {
         : best;
     }, null);
 
+    // Calculate days with data
+    const uniqueDays = new Set(
+      validEntries.map((e) => new Date(e.date).toDateString()),
+    );
+    const daysWithData = uniqueDays.size;
+
+    // Calculate total days in range
+    let totalDays = 0;
+    if (timeRange === "today") {
+      totalDays = 1;
+    } else if (timeRange === "week") {
+      totalDays = 7;
+    } else if (timeRange === "month") {
+      totalDays = 30;
+    } else if (timeRange === "quarter") {
+      totalDays = 90;
+    } else if (timeRange === "sixMonths") {
+      totalDays = 180;
+    } else if (timeRange === "year") {
+      totalDays = 365;
+    } else {
+      totalDays = daysWithData;
+    }
+
     return {
       totalRevenue: totals.revenue,
       totalLeads: totals.leads,
@@ -485,8 +525,175 @@ export default function Dashboard() {
       totalCoding: totals.coding,
       totalbookPage: totals.bookPage,
       bestDay,
+      daysWithData,
+      totalDays,
     };
-  }, [filteredEntries]);
+  }, [filteredEntries, timeRange]);
+
+  // ==========================
+  // Goal Tracking - Time Range Aware
+  // ==========================
+  // ==========================
+  // Goal Tracking - Time Range Aware
+  // ==========================
+  // ==========================
+  // Goal Tracking - Time Range Aware
+  // ==========================
+  // ==========================
+  // Goal Tracking - Time Range Aware
+  // ==========================
+  const goalProgress = useMemo(() => {
+    if (!Array.isArray(filteredEntries) || filteredEntries.length === 0) {
+      return {
+        pagesGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        codingGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        postsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        leadsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        revenueGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        clientsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        consistency: { daysLogged: 0, targetDays: 0, progress: 0, label: "" },
+      };
+    }
+
+    const validEntries = filteredEntries.filter((entry) => entry && entry.date);
+    const daysWithData = new Set(
+      validEntries.map((e) => new Date(e.date).toDateString()),
+    ).size;
+
+    // Calculate days based on time range
+    let daysInRange = 0;
+    let weeksInRange = 0;
+    let monthsInRange = 0;
+
+    if (timeRange === "today") {
+      daysInRange = 1;
+      weeksInRange = 0.14;
+      monthsInRange = 0.03;
+    } else if (timeRange === "week") {
+      daysInRange = 7;
+      weeksInRange = 1;
+      monthsInRange = 0.23;
+    } else if (timeRange === "month") {
+      daysInRange = 30;
+      weeksInRange = 4.28;
+      monthsInRange = 1;
+    } else if (timeRange === "quarter") {
+      daysInRange = 90;
+      weeksInRange = 12.86;
+      monthsInRange = 3;
+    } else if (timeRange === "sixMonths") {
+      daysInRange = 180;
+      weeksInRange = 25.71;
+      monthsInRange = 6;
+    } else if (timeRange === "year") {
+      daysInRange = 365;
+      weeksInRange = 52.14;
+      monthsInRange = 12;
+    } else if (timeRange === "all") {
+      // For "All" time - calculate based on actual data range
+      if (validEntries.length > 0) {
+        const firstDate = new Date(validEntries[0].date);
+        const lastDate = new Date(validEntries[validEntries.length - 1].date);
+        const diffTime = Math.abs(lastDate - firstDate);
+        daysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        weeksInRange = daysInRange / 7;
+        monthsInRange = daysInRange / 30;
+      } else {
+        daysInRange = 30;
+        weeksInRange = 4.28;
+        monthsInRange = 1;
+      }
+    } else {
+      // Default fallback
+      daysInRange = 30;
+      weeksInRange = 4.28;
+      monthsInRange = 1;
+    }
+
+    // Calculate actual totals
+    const totals = validEntries.reduce(
+      (acc, entry) => ({
+        revenue: acc.revenue + safeNumber(entry.revenue),
+        leads: acc.leads + safeNumber(entry.leads),
+        clients: acc.clients + safeNumber(entry.clients),
+        coding: acc.coding + safeNumber(entry.coding),
+        post: acc.post + safeNumber(entry.post),
+        bookPage: acc.bookPage + safeNumber(entry.bookPage),
+      }),
+      { revenue: 0, leads: 0, clients: 0, coding: 0, post: 0, bookPage: 0 },
+    );
+
+    // Calculate targets based on time range
+    const pageTarget = Math.round(GOALS.daily.pages * daysInRange);
+    const codingTarget = Math.round(GOALS.daily.coding * daysInRange * 10) / 10;
+    const postsTarget = Math.round(GOALS.weekly.posts * weeksInRange);
+    const leadsTarget = Math.round(GOALS.monthly.leads * monthsInRange);
+    const revenueTarget = Math.round(GOALS.monthly.revenue * monthsInRange);
+    const clientsTarget = Math.round(GOALS.monthly.clients * monthsInRange);
+
+    // Helper function to safely calculate progress (avoid NaN)
+    const calculateProgress = (achieved, target) => {
+      if (target === 0) return 0;
+      return Math.min(100, Math.round((achieved / target) * 100));
+    };
+
+    // Get label for each goal based on time range
+    const getTimeLabel = (baseLabel, type) => {
+      if (timeRange === "today") return `${baseLabel} (Today)`;
+      if (timeRange === "week") return `${baseLabel} (Week)`;
+      if (timeRange === "month") return `${baseLabel} (Month)`;
+      if (timeRange === "quarter") return `${baseLabel} (Quarter)`;
+      if (timeRange === "sixMonths") return `${baseLabel} (6 Months)`;
+      if (timeRange === "year") return `${baseLabel} (Year)`;
+      if (timeRange === "all") return `${baseLabel} (All Time)`;
+      return baseLabel;
+    };
+
+    return {
+      pagesGoal: {
+        achieved: totals.bookPage,
+        target: pageTarget,
+        progress: calculateProgress(totals.bookPage, pageTarget),
+        label: getTimeLabel("📖 Reading", "pages"),
+      },
+      codingGoal: {
+        achieved: Math.round(totals.coding * 10) / 10,
+        target: codingTarget,
+        progress: calculateProgress(totals.coding, codingTarget),
+        label: getTimeLabel("💻 Coding", "coding"),
+      },
+      postsGoal: {
+        achieved: totals.post,
+        target: postsTarget,
+        progress: calculateProgress(totals.post, postsTarget),
+        label: getTimeLabel("📱 Posts", "posts"),
+      },
+      leadsGoal: {
+        achieved: totals.leads,
+        target: leadsTarget,
+        progress: calculateProgress(totals.leads, leadsTarget),
+        label: getTimeLabel("📊 Leads", "leads"),
+      },
+      revenueGoal: {
+        achieved: totals.revenue,
+        target: revenueTarget,
+        progress: calculateProgress(totals.revenue, revenueTarget),
+        label: getTimeLabel("💰 Revenue", "revenue"),
+      },
+      clientsGoal: {
+        achieved: totals.clients,
+        target: clientsTarget,
+        progress: calculateProgress(totals.clients, clientsTarget),
+        label: getTimeLabel("👥 Clients", "clients"),
+      },
+      consistency: {
+        daysLogged: daysWithData,
+        targetDays: Math.round(daysInRange),
+        progress: calculateProgress(daysWithData, Math.max(1, daysInRange)),
+        label: getTimeLabel("📅 Consistency", "consistency"),
+      },
+    };
+  }, [filteredEntries, timeRange]);
 
   // ==========================
   // Trends & Health
@@ -759,6 +966,266 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Goals Section */}
+      {/* Goals Section */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">
+          🎯 Goals
+          <span className="text-sm font-normal text-gray-500 ml-2">
+            ({RANGES.find((r) => r.value === timeRange)?.full || "All Time"})
+          </span>
+        </h2>
+
+        {/* Check if there's any data */}
+        {Array.isArray(filteredEntries) && filteredEntries.length === 0 ? (
+          <div className="border rounded-xl p-8 text-center bg-gray-50 dark:bg-gray-800">
+            <p className="text-lg text-gray-500 dark:text-gray-400">
+              {timeRange === "today" ? (
+                <>
+                  🌅 No entries for today yet.
+                  <br />
+                  <span className="text-sm">
+                    Start your day by adding your first entry!
+                  </span>
+                </>
+              ) : (
+                <>
+                  📊 No data available for this period.
+                  <br />
+                  <span className="text-sm">
+                    Start adding entries to track your progress!
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* Pages Goal */}
+              <div className="border rounded-xl p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-indigo-950">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">
+                    {goalProgress.pagesGoal.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {goalProgress.pagesGoal.achieved} /{" "}
+                    {goalProgress.pagesGoal.target} pages
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      goalProgress.pagesGoal.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-blue-500"
+                    }`}
+                    style={{ width: `${goalProgress.pagesGoal.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm mt-1 text-gray-500">
+                  {goalProgress.pagesGoal.progress >= 100
+                    ? "✅ Goal Achieved!"
+                    : goalProgress.pagesGoal.achieved === 0 &&
+                        timeRange === "today"
+                      ? "📖 No pages read yet"
+                      : `${goalProgress.pagesGoal.progress}% of goal`}
+                </p>
+              </div>
+
+              {/* Coding Goal */}
+              <div className="border rounded-xl p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-900 dark:to-purple-950">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">
+                    {goalProgress.codingGoal.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {goalProgress.codingGoal.achieved} /{" "}
+                    {goalProgress.codingGoal.target} hrs
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      goalProgress.codingGoal.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-purple-500"
+                    }`}
+                    style={{ width: `${goalProgress.codingGoal.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm mt-1 text-gray-500">
+                  {goalProgress.codingGoal.progress >= 100
+                    ? "✅ Goal Achieved!"
+                    : goalProgress.codingGoal.achieved === 0 &&
+                        timeRange === "today"
+                      ? "💻 No coding done yet"
+                      : `${goalProgress.codingGoal.progress}% of goal`}
+                </p>
+              </div>
+
+              {/* Posts Goal */}
+              <div className="border rounded-xl p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-900 dark:to-emerald-950">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">
+                    {goalProgress.postsGoal.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {goalProgress.postsGoal.achieved} /{" "}
+                    {goalProgress.postsGoal.target} posts
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      goalProgress.postsGoal.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-emerald-500"
+                    }`}
+                    style={{ width: `${goalProgress.postsGoal.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm mt-1 text-gray-500">
+                  {goalProgress.postsGoal.progress >= 100
+                    ? "✅ Goal Achieved!"
+                    : goalProgress.postsGoal.achieved === 0 &&
+                        timeRange === "today"
+                      ? "📱 No posts yet"
+                      : `${goalProgress.postsGoal.progress}% of goal`}
+                </p>
+              </div>
+
+              {/* Leads Goal */}
+              <div className="border rounded-xl p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-slate-900 dark:to-amber-950">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">
+                    {goalProgress.leadsGoal.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {goalProgress.leadsGoal.achieved} /{" "}
+                    {goalProgress.leadsGoal.target} leads
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      goalProgress.leadsGoal.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-yellow-500"
+                    }`}
+                    style={{ width: `${goalProgress.leadsGoal.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm mt-1 text-gray-500">
+                  {goalProgress.leadsGoal.progress >= 100
+                    ? "✅ Goal Achieved!"
+                    : goalProgress.leadsGoal.achieved === 0 &&
+                        timeRange === "today"
+                      ? "📊 No leads yet"
+                      : `${goalProgress.leadsGoal.progress}% of goal`}
+                </p>
+              </div>
+
+              {/* Revenue Goal */}
+              <div className="border rounded-xl p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-slate-900 dark:to-rose-950">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">
+                    {goalProgress.revenueGoal.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ₹{goalProgress.revenueGoal.achieved} / ₹
+                    {goalProgress.revenueGoal.target}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      goalProgress.revenueGoal.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                    style={{ width: `${goalProgress.revenueGoal.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm mt-1 text-gray-500">
+                  {goalProgress.revenueGoal.progress >= 100
+                    ? "✅ Goal Achieved!"
+                    : goalProgress.revenueGoal.achieved === 0 &&
+                        timeRange === "today"
+                      ? "💰 No revenue yet"
+                      : `${goalProgress.revenueGoal.progress}% of goal`}
+                </p>
+              </div>
+
+              {/* Clients Goal */}
+              <div className="border rounded-xl p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold">
+                    {goalProgress.clientsGoal.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {goalProgress.clientsGoal.achieved} /{" "}
+                    {goalProgress.clientsGoal.target} clients
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      goalProgress.clientsGoal.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-teal-500"
+                    }`}
+                    style={{ width: `${goalProgress.clientsGoal.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm mt-1 text-gray-500">
+                  {goalProgress.clientsGoal.progress >= 100
+                    ? "✅ Goal Achieved!"
+                    : goalProgress.clientsGoal.achieved === 0 &&
+                        timeRange === "today"
+                      ? "👥 No clients yet"
+                      : `${goalProgress.clientsGoal.progress}% of goal`}
+                </p>
+              </div>
+            </div>
+
+            {/* Consistency Goal */}
+            <div className="mt-4 border rounded-xl p-4 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-slate-800 dark:to-slate-900">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-semibold">
+                  {goalProgress.consistency.label}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {goalProgress.consistency.daysLogged} /{" "}
+                  {goalProgress.consistency.targetDays} days
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all duration-500 ${
+                    goalProgress.consistency.progress >= 80
+                      ? "bg-green-500"
+                      : goalProgress.consistency.progress >= 50
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                  }`}
+                  style={{ width: `${goalProgress.consistency.progress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm mt-1 text-gray-500">
+                {goalProgress.consistency.daysLogged === 0 &&
+                timeRange === "today"
+                  ? "📅 Start tracking today!"
+                  : goalProgress.consistency.progress >= 80
+                    ? "🔥 Great consistency!"
+                    : goalProgress.consistency.progress >= 50
+                      ? "💪 Keep going!"
+                      : "📈 Try to be more consistent"}
+              </p>
+            </div>
+          </>
+        )}
+      </div>
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
         <StatCard title="Revenue" value={`₹${metrics.totalRevenue}`} />
         <StatCard title="Leads" value={metrics.totalLeads} />
