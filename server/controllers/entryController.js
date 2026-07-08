@@ -63,3 +63,38 @@ export const deleteEntry = async (req, res) => {
     });
   }
 };
+// Update Entry
+export const updateEntry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { leads, clients, revenue, coding, post, bookPage, note } = req.body;
+
+    const entry = await Entry.findOne({
+      _id: id,
+      userId: req.userId,
+    });
+
+    if (!entry) {
+      return res.status(404).json({
+        message: "Entry not found",
+      });
+    }
+
+    // Update fields
+    if (leads !== undefined) entry.leads = leads;
+    if (clients !== undefined) entry.clients = clients;
+    if (revenue !== undefined) entry.revenue = revenue;
+    if (coding !== undefined) entry.coding = coding;
+    if (post !== undefined) entry.post = post;
+    if (bookPage !== undefined) entry.bookPage = bookPage;
+    if (note !== undefined) entry.note = note;
+
+    await entry.save();
+
+    res.json(entry);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

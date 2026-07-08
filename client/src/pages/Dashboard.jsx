@@ -50,18 +50,204 @@ const RANGES = [
 // ==========================
 const GOALS = {
   daily: {
-    pages: 10, // Read 10 pages daily
-    coding: 2, // Code 2 hours daily
+    pages: 10,
+    coding: 2,
+    exercise: 30,
+    meditate: 10,
   },
   weekly: {
-    posts: 2, // 2 social media posts weekly
+    posts: 2,
+    meetings: 3,
   },
   monthly: {
-    revenue: 5000, // ₹5,000 monthly revenue
-    clients: 2, // 2 new clients monthly (UPDATED)
-    leads: 5, // 5 new leads monthly
+    revenue: 5000,
+    clients: 2,
+    leads: 5,
+    content: 4,
   },
 };
+
+// ==========================
+// Achievement Badges Configuration
+// ==========================
+const BADGES = [
+  {
+    id: "first_entry",
+    label: "🌟 First Entry",
+    icon: "🌟",
+    condition: (entries) => entries.length >= 1,
+  },
+  {
+    id: "seven_days",
+    label: "🔥 7 Day Streak",
+    icon: "🔥",
+    condition: (entries) => getStreak(entries) >= 7,
+  },
+  {
+    id: "fourteen_days",
+    label: "⚡ 14 Day Streak",
+    icon: "⚡",
+    condition: (entries) => getStreak(entries) >= 14,
+  },
+  {
+    id: "thirty_days",
+    label: "🏆 30 Day Streak",
+    icon: "🏆",
+    condition: (entries) => getStreak(entries) >= 30,
+  },
+  {
+    id: "hundred_pages",
+    label: "📚 100 Pages Read",
+    icon: "📚",
+    condition: (entries) => getTotalPages(entries) >= 100,
+  },
+  {
+    id: "five_hundred_pages",
+    label: "📖 500 Pages Read",
+    icon: "📖",
+    condition: (entries) => getTotalPages(entries) >= 500,
+  },
+  {
+    id: "thousand_pages",
+    label: "📚 1000 Pages Read",
+    icon: "📚",
+    condition: (entries) => getTotalPages(entries) >= 1000,
+  },
+  {
+    id: "first_client",
+    label: "🤝 First Client",
+    icon: "🤝",
+    condition: (entries) => getTotalClients(entries) >= 1,
+  },
+  {
+    id: "ten_clients",
+    label: "🎯 10 Clients",
+    icon: "🎯",
+    condition: (entries) => getTotalClients(entries) >= 10,
+  },
+  {
+    id: "first_revenue",
+    label: "💰 First Revenue",
+    icon: "💰",
+    condition: (entries) => getTotalRevenue(entries) >= 1000,
+  },
+  {
+    id: "ten_k_revenue",
+    label: "💎 ₹10K Revenue",
+    icon: "💎",
+    condition: (entries) => getTotalRevenue(entries) >= 10000,
+  },
+  {
+    id: "fifty_k_revenue",
+    label: "👑 ₹50K Revenue",
+    icon: "👑",
+    condition: (entries) => getTotalRevenue(entries) >= 50000,
+  },
+  {
+    id: "hundred_k_revenue",
+    label: "🌟 ₹1L Revenue",
+    icon: "🌟",
+    condition: (entries) => getTotalRevenue(entries) >= 100000,
+  },
+  {
+    id: "fifty_coding",
+    label: "💻 50 Hours Coding",
+    icon: "💻",
+    condition: (entries) => getTotalCoding(entries) >= 50,
+  },
+  {
+    id: "hundred_coding",
+    label: "⚡ 100 Hours Coding",
+    icon: "⚡",
+    condition: (entries) => getTotalCoding(entries) >= 100,
+  },
+  {
+    id: "ten_posts",
+    label: "📱 10 Posts",
+    icon: "📱",
+    condition: (entries) => getTotalPosts(entries) >= 10,
+  },
+  {
+    id: "fifty_posts",
+    label: "📢 50 Posts",
+    icon: "📢",
+    condition: (entries) => getTotalPosts(entries) >= 50,
+  },
+];
+
+// Helper functions for badges
+// ==========================
+// Helper functions for badges
+// ==========================
+function getStreak(entries) {
+  if (!entries || entries.length === 0) return 0;
+
+  // Get unique dates and sort them (newest first)
+  const dates = entries
+    .filter((e) => e && e.date)
+    .map((e) => new Date(e.date).toDateString())
+    .filter((value, index, self) => self.indexOf(value) === index)
+    .sort((a, b) => new Date(b) - new Date(a));
+
+  if (dates.length === 0) return 0;
+
+  // Get today and yesterday
+  const today = new Date().toDateString();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toDateString();
+
+  // Check if today or yesterday has entries
+  const hasToday = dates.includes(today);
+  const hasYesterday = dates.includes(yesterdayStr);
+
+  // If neither today nor yesterday has entries, streak is 0
+  if (!hasToday && !hasYesterday) {
+    return 0;
+  }
+
+  // Start counting from the most recent date (today or yesterday)
+  let streak = 0;
+  let currentDate = new Date();
+
+  // If today doesn't have entry, start from yesterday
+  if (!hasToday) {
+    currentDate.setDate(currentDate.getDate() - 1);
+  }
+
+  // Check consecutive days going backwards
+  while (true) {
+    const dateStr = currentDate.toDateString();
+    if (dates.includes(dateStr)) {
+      streak++;
+      currentDate.setDate(currentDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+function getTotalPages(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.bookPage), 0);
+}
+
+function getTotalClients(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.clients), 0);
+}
+
+function getTotalRevenue(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.revenue), 0);
+}
+
+function getTotalCoding(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.coding), 0);
+}
+
+function getTotalPosts(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.post), 0);
+}
 
 // ==========================
 // Utility Functions
@@ -149,6 +335,8 @@ export default function Dashboard() {
   const [timeRange, setTimeRange] = useState("month");
   const [currentPage, setCurrentPage] = useState(1);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editFormData, setEditFormData] = useState(null);
 
   const ENTRIES_PER_PAGE = 10;
 
@@ -214,7 +402,7 @@ export default function Dashboard() {
           throw new Error("Authentication required");
         }
 
-        await api.delete(`/entries/${id}`, {
+        await api.delete(`/entries/entries-delete/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -228,6 +416,63 @@ export default function Dashboard() {
     },
     [getToken],
   );
+
+  // ==========================
+  // Edit Entry
+  // ==========================
+  const startEdit = useCallback((entry) => {
+    setEditingEntry(entry._id);
+    setEditFormData({
+      date: entry.date ? entry.date.split("T")[0] : "",
+      leads: entry.leads || 0,
+      clients: entry.clients || 0,
+      revenue: entry.revenue || 0,
+      coding: entry.coding || 0,
+      post: entry.post || 0,
+      bookPage: entry.bookPage || 0,
+      note: entry.note || "",
+    });
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingEntry(null);
+    setEditFormData(null);
+  }, []);
+
+  const saveEdit = useCallback(
+    async (id) => {
+      if (!id || !editFormData) return;
+
+      try {
+        const token = await getToken();
+
+        if (!token) {
+          throw new Error("Authentication required");
+        }
+
+        await api.put(`/entries/entries-edit/${id}`, editFormData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await fetchEntries();
+        setEditingEntry(null);
+        setEditFormData(null);
+      } catch (err) {
+        console.error("Failed to update entry:", err);
+        setError("Failed to update entry. Please try again.");
+      }
+    },
+    [editFormData, getToken, fetchEntries],
+  );
+
+  const handleEditChange = (e) => {
+    setEditFormData({
+      ...editFormData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   // ==========================
   // Data Processing - Memoized
@@ -492,13 +737,11 @@ export default function Dashboard() {
         : best;
     }, null);
 
-    // Calculate days with data
     const uniqueDays = new Set(
       validEntries.map((e) => new Date(e.date).toDateString()),
     );
     const daysWithData = uniqueDays.size;
 
-    // Calculate total days in range
     let totalDays = 0;
     if (timeRange === "today") {
       totalDays = 1;
@@ -533,24 +776,19 @@ export default function Dashboard() {
   // ==========================
   // Goal Tracking - Time Range Aware
   // ==========================
-  // ==========================
-  // Goal Tracking - Time Range Aware
-  // ==========================
-  // ==========================
-  // Goal Tracking - Time Range Aware
-  // ==========================
-  // ==========================
-  // Goal Tracking - Time Range Aware
-  // ==========================
   const goalProgress = useMemo(() => {
     if (!Array.isArray(filteredEntries) || filteredEntries.length === 0) {
       return {
         pagesGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         codingGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        exerciseGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        meditateGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         postsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        meetingsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         leadsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         revenueGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         clientsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        contentGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         consistency: { daysLogged: 0, targetDays: 0, progress: 0, label: "" },
       };
     }
@@ -560,7 +798,6 @@ export default function Dashboard() {
       validEntries.map((e) => new Date(e.date).toDateString()),
     ).size;
 
-    // Calculate days based on time range
     let daysInRange = 0;
     let weeksInRange = 0;
     let monthsInRange = 0;
@@ -590,7 +827,6 @@ export default function Dashboard() {
       weeksInRange = 52.14;
       monthsInRange = 12;
     } else if (timeRange === "all") {
-      // For "All" time - calculate based on actual data range
       if (validEntries.length > 0) {
         const firstDate = new Date(validEntries[0].date);
         const lastDate = new Date(validEntries[validEntries.length - 1].date);
@@ -604,13 +840,11 @@ export default function Dashboard() {
         monthsInRange = 1;
       }
     } else {
-      // Default fallback
       daysInRange = 30;
       weeksInRange = 4.28;
       monthsInRange = 1;
     }
 
-    // Calculate actual totals
     const totals = validEntries.reduce(
       (acc, entry) => ({
         revenue: acc.revenue + safeNumber(entry.revenue),
@@ -619,26 +853,42 @@ export default function Dashboard() {
         coding: acc.coding + safeNumber(entry.coding),
         post: acc.post + safeNumber(entry.post),
         bookPage: acc.bookPage + safeNumber(entry.bookPage),
+        exercise: safeNumber(entry.exercise) || 0,
+        meditate: safeNumber(entry.meditate) || 0,
+        meetings: safeNumber(entry.meetings) || 0,
+        content: safeNumber(entry.content) || 0,
       }),
-      { revenue: 0, leads: 0, clients: 0, coding: 0, post: 0, bookPage: 0 },
+      {
+        revenue: 0,
+        leads: 0,
+        clients: 0,
+        coding: 0,
+        post: 0,
+        bookPage: 0,
+        exercise: 0,
+        meditate: 0,
+        meetings: 0,
+        content: 0,
+      },
     );
 
-    // Calculate targets based on time range
     const pageTarget = Math.round(GOALS.daily.pages * daysInRange);
     const codingTarget = Math.round(GOALS.daily.coding * daysInRange * 10) / 10;
+    const exerciseTarget = Math.round(GOALS.daily.exercise * daysInRange);
+    const meditateTarget = Math.round(GOALS.daily.meditate * daysInRange);
     const postsTarget = Math.round(GOALS.weekly.posts * weeksInRange);
+    const meetingsTarget = Math.round(GOALS.weekly.meetings * weeksInRange);
     const leadsTarget = Math.round(GOALS.monthly.leads * monthsInRange);
     const revenueTarget = Math.round(GOALS.monthly.revenue * monthsInRange);
     const clientsTarget = Math.round(GOALS.monthly.clients * monthsInRange);
+    const contentTarget = Math.round(GOALS.monthly.content * monthsInRange);
 
-    // Helper function to safely calculate progress (avoid NaN)
     const calculateProgress = (achieved, target) => {
       if (target === 0) return 0;
       return Math.min(100, Math.round((achieved / target) * 100));
     };
 
-    // Get label for each goal based on time range
-    const getTimeLabel = (baseLabel, type) => {
+    const getTimeLabel = (baseLabel) => {
       if (timeRange === "today") return `${baseLabel} (Today)`;
       if (timeRange === "week") return `${baseLabel} (Week)`;
       if (timeRange === "month") return `${baseLabel} (Month)`;
@@ -654,46 +904,130 @@ export default function Dashboard() {
         achieved: totals.bookPage,
         target: pageTarget,
         progress: calculateProgress(totals.bookPage, pageTarget),
-        label: getTimeLabel("📖 Reading", "pages"),
+        label: getTimeLabel("📖 Reading"),
       },
       codingGoal: {
         achieved: Math.round(totals.coding * 10) / 10,
         target: codingTarget,
         progress: calculateProgress(totals.coding, codingTarget),
-        label: getTimeLabel("💻 Coding", "coding"),
+        label: getTimeLabel("💻 Coding"),
+      },
+      exerciseGoal: {
+        achieved: totals.exercise,
+        target: exerciseTarget,
+        progress: calculateProgress(totals.exercise, exerciseTarget),
+        label: getTimeLabel("🏋️ Exercise"),
+      },
+      meditateGoal: {
+        achieved: totals.meditate,
+        target: meditateTarget,
+        progress: calculateProgress(totals.meditate, meditateTarget),
+        label: getTimeLabel("🧘 Meditation"),
       },
       postsGoal: {
         achieved: totals.post,
         target: postsTarget,
         progress: calculateProgress(totals.post, postsTarget),
-        label: getTimeLabel("📱 Posts", "posts"),
+        label: getTimeLabel("📱 Posts"),
+      },
+      meetingsGoal: {
+        achieved: totals.meetings,
+        target: meetingsTarget,
+        progress: calculateProgress(totals.meetings, meetingsTarget),
+        label: getTimeLabel("🤝 Meetings"),
       },
       leadsGoal: {
         achieved: totals.leads,
         target: leadsTarget,
         progress: calculateProgress(totals.leads, leadsTarget),
-        label: getTimeLabel("📊 Leads", "leads"),
+        label: getTimeLabel("📊 Leads"),
       },
       revenueGoal: {
         achieved: totals.revenue,
         target: revenueTarget,
         progress: calculateProgress(totals.revenue, revenueTarget),
-        label: getTimeLabel("💰 Revenue", "revenue"),
+        label: getTimeLabel("💰 Revenue"),
       },
       clientsGoal: {
         achieved: totals.clients,
         target: clientsTarget,
         progress: calculateProgress(totals.clients, clientsTarget),
-        label: getTimeLabel("👥 Clients", "clients"),
+        label: getTimeLabel("👥 Clients"),
+      },
+      contentGoal: {
+        achieved: totals.content,
+        target: contentTarget,
+        progress: calculateProgress(totals.content, contentTarget),
+        label: getTimeLabel("✍️ Content"),
       },
       consistency: {
         daysLogged: daysWithData,
         targetDays: Math.round(daysInRange),
         progress: calculateProgress(daysWithData, Math.max(1, daysInRange)),
-        label: getTimeLabel("📅 Consistency", "consistency"),
+        label: getTimeLabel("📅 Consistency"),
       },
     };
   }, [filteredEntries, timeRange]);
+
+  // ==========================
+  // Streak Calculation - Fixed
+  // ==========================
+  const streak = useMemo(() => {
+    if (!entries || entries.length === 0) return 0;
+    return getStreak(entries);
+  }, [entries]);
+
+  // ==========================
+  // Achievement Badges - Fixed (only show when achieved)
+  // ==========================
+  const earnedBadges = useMemo(() => {
+    if (!entries || entries.length === 0) return [];
+    return BADGES.filter((badge) => badge.condition(entries));
+  }, [entries]);
+
+  // ==========================
+  // Progress Summary
+  // ==========================
+  const progressSummary = useMemo(() => {
+    if (!entries || entries.length === 0) {
+      return { totalGoals: 0, achieved: 0, progress: 0 };
+    }
+
+    const goals = [
+      {
+        achieved: goalProgress.pagesGoal.achieved,
+        target: goalProgress.pagesGoal.target,
+      },
+      {
+        achieved: goalProgress.codingGoal.achieved,
+        target: goalProgress.codingGoal.target,
+      },
+      {
+        achieved: goalProgress.postsGoal.achieved,
+        target: goalProgress.postsGoal.target,
+      },
+      {
+        achieved: goalProgress.leadsGoal.achieved,
+        target: goalProgress.leadsGoal.target,
+      },
+      {
+        achieved: goalProgress.revenueGoal.achieved,
+        target: goalProgress.revenueGoal.target,
+      },
+      {
+        achieved: goalProgress.clientsGoal.achieved,
+        target: goalProgress.clientsGoal.target,
+      },
+    ];
+
+    const total = goals.length;
+    const achieved = goals.filter(
+      (g) => g.target > 0 && g.achieved >= g.target,
+    ).length;
+    const progress = total > 0 ? Math.round((achieved / total) * 100) : 0;
+
+    return { totalGoals: total, achieved, progress };
+  }, [goalProgress]);
 
   // ==========================
   // Trends & Health
@@ -777,7 +1111,6 @@ export default function Dashboard() {
       ENTRIES_PER_PAGE,
   );
 
-  // Reset to first page when filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [timeRange]);
@@ -841,17 +1174,17 @@ export default function Dashboard() {
   // ==========================
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto p-6 animate-pulse">
+      <div className="max-w-7xl mx-auto p-6 animate-pulse">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 mb-10">
           <div>
-            <div className="h-10 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
-            <div className="h-5 w-72 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-12 w-56 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+            <div className="h-6 w-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
           <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 shadow-sm">
             {RANGES.map((range) => (
               <div
                 key={range.value}
-                className="px-4 py-2 rounded-lg w-12 h-10 bg-gray-200 dark:bg-gray-700 mx-0.5"
+                className="px-5 py-3 rounded-lg w-14 h-12 bg-gray-200 dark:bg-gray-700 mx-0.5"
               ></div>
             ))}
           </div>
@@ -860,7 +1193,7 @@ export default function Dashboard() {
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl"
+              className="h-28 bg-gray-200 dark:bg-gray-700 rounded-xl"
             ></div>
           ))}
         </div>
@@ -868,7 +1201,7 @@ export default function Dashboard() {
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl"
+              className="h-72 bg-gray-200 dark:bg-gray-700 rounded-xl"
             ></div>
           ))}
         </div>
@@ -877,14 +1210,15 @@ export default function Dashboard() {
   }
 
   // ==========================
-  // Main Render
+  // Main Render - BIGGER, CLEANER UI
   // ==========================
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 mb-10">
         <div>
-          <h1 className="text-4xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
+          <h1 className="text-5xl font-bold">📊 Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-3 text-lg">
             View your business performance across different time periods.
           </p>
         </div>
@@ -892,31 +1226,31 @@ export default function Dashboard() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={exportData}
-            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-base font-medium shadow-sm"
             disabled={
               !Array.isArray(filteredEntries) || filteredEntries.length === 0
             }
           >
-            Export CSV
+            📥 Export CSV
           </button>
 
           <button
             onClick={fetchEntries}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors text-base font-medium shadow-sm"
           >
-            Refresh
+            🔄 Refresh
           </button>
 
-          <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 shadow-sm flex-wrap">
+          <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1.5 shadow-sm flex-wrap">
             {RANGES.map((range) => (
               <button
                 key={range.value}
                 onClick={() => setTimeRange(range.value)}
                 className={`
-                  px-4 py-2 rounded-lg font-medium transition-all
+                  px-5 py-2.5 rounded-lg font-medium transition-all text-base
                   ${
                     timeRange === range.value
-                      ? "bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400"
+                      ? "bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-400"
                       : "hover:bg-white/40 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-400"
                   }
                 `}
@@ -928,28 +1262,30 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Error */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 flex justify-between items-center">
-          <span>{error}</span>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-6 py-4 rounded-xl mb-6 flex justify-between items-center">
+          <span className="text-base">{error}</span>
           <button
             onClick={() => setError(null)}
-            className="text-red-700 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 text-xl font-bold"
+            className="text-red-700 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 text-2xl font-bold"
           >
             ×
           </button>
         </div>
       )}
 
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-gray-500 dark:text-gray-400">
+      {/* Info Bar */}
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <p className="text-gray-500 dark:text-gray-400 text-base">
           Showing analytics for
-          <span className="font-semibold ml-2">
+          <span className="font-semibold ml-2 text-gray-700 dark:text-gray-300">
             {RANGES.find((r) => r.value === timeRange)?.full || "All Time"}
           </span>
         </p>
 
-        <div className="flex items-center gap-4">
-          <span className="text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-6">
+          <span className="text-gray-500 dark:text-gray-400 text-base">
             {Array.isArray(filteredEntries) ? filteredEntries.length : 0}{" "}
             Entries
           </span>
@@ -959,273 +1295,470 @@ export default function Dashboard() {
               type="checkbox"
               checked={autoRefresh}
               onChange={() => setAutoRefresh(!autoRefresh)}
-              className="rounded"
+              className="rounded w-4 h-4"
             />
             Auto-refresh
           </label>
         </div>
       </div>
 
-      {/* Goals Section */}
-      {/* Goals Section */}
+      {/* ====== PROGRESS SUMMARY ====== */}
+      {entries.length > 0 && (
+        <div className="mb-6 rounded-2xl border p-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold">📊 Progress Summary</h3>
+              <p className="text-base text-gray-500">
+                {progressSummary.achieved} of {progressSummary.totalGoals} goals
+                achieved
+              </p>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {progressSummary.progress}%
+                </div>
+                <div className="text-sm text-gray-500">Overall Progress</div>
+              </div>
+              <div className="w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                <div
+                  className="h-4 rounded-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-500"
+                  style={{ width: `${progressSummary.progress}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====== STREAK COUNTER - Fixed ====== */}
+      {/* ====== STREAK COUNTER - Fixed with break/restart ====== */}
+      {entries.length > 0 && (
+        <div className="mb-6 rounded-2xl border-2 p-6 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold">🔥 Streak</h3>
+              <p className="text-base text-gray-500">
+                {streak === 0
+                  ? "😴 No active streak. Start logging daily to build one!"
+                  : streak === 1
+                    ? "🌟 You're starting a new streak! Keep going!"
+                    : streak < 7
+                      ? `🔥 ${streak} day streak! Keep the momentum going!`
+                      : `🔥 ${streak} day streak! You're on fire!`}
+              </p>
+            </div>
+            <div className="text-5xl font-bold text-orange-500">
+              {streak} {streak === 1 ? "day" : "days"}
+            </div>
+          </div>
+          {streak === 0 && (
+            <div className="mt-3 text-sm text-gray-400">
+              💡 Tip: Log an entry today to start your streak!
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ====== ACHIEVEMENT BADGES - Only show when earned ====== */}
+      {earnedBadges.length > 0 && (
+        <div className="mb-6 rounded-2xl border p-6 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 shadow-sm">
+          <h3 className="text-xl font-bold mb-4">🏅 Achievements</h3>
+          <div className="flex flex-wrap gap-3">
+            {earnedBadges.map((badge) => (
+              <div
+                key={badge.id}
+                className="group relative flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-yellow-200 dark:border-yellow-800 hover:shadow-md transition-shadow"
+                title={badge.label}
+              >
+                <span className="text-2xl">{badge.icon}</span>
+                <span className="text-base font-medium">{badge.label}</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+                  {badge.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ====== GOALS SECTION - Always show all goals ====== */}
       <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <h2 className="text-3xl font-bold mb-6">
           🎯 Goals
-          <span className="text-sm font-normal text-gray-500 ml-2">
+          <span className="text-base font-normal text-gray-500 ml-3">
             ({RANGES.find((r) => r.value === timeRange)?.full || "All Time"})
           </span>
         </h2>
 
-        {/* Check if there's any data */}
-        {Array.isArray(filteredEntries) && filteredEntries.length === 0 ? (
-          <div className="border rounded-xl p-8 text-center bg-gray-50 dark:bg-gray-800">
-            <p className="text-lg text-gray-500 dark:text-gray-400">
-              {timeRange === "today" ? (
-                <>
-                  🌅 No entries for today yet.
-                  <br />
-                  <span className="text-sm">
-                    Start your day by adding your first entry!
-                  </span>
-                </>
-              ) : (
-                <>
-                  📊 No data available for this period.
-                  <br />
-                  <span className="text-sm">
-                    Start adding entries to track your progress!
-                  </span>
-                </>
-              )}
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* Pages Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-indigo-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.pagesGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.pagesGoal.achieved} /{" "}
+                {goalProgress.pagesGoal.target} pages
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.pagesGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-blue-500"
+                }`}
+                style={{ width: `${goalProgress.pagesGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.pagesGoal.progress >= 100
+                ? "✅ Goal Achieved! Amazing!"
+                : goalProgress.pagesGoal.achieved === 0
+                  ? "📖 Start reading today!"
+                  : `${goalProgress.pagesGoal.progress}% of goal`}
             </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              Read {GOALS.daily.pages} pages daily
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {/* Pages Goal */}
-              <div className="border rounded-xl p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-indigo-950">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">
-                    {goalProgress.pagesGoal.label}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {goalProgress.pagesGoal.achieved} /{" "}
-                    {goalProgress.pagesGoal.target} pages
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      goalProgress.pagesGoal.progress >= 100
-                        ? "bg-green-500"
-                        : "bg-blue-500"
-                    }`}
-                    style={{ width: `${goalProgress.pagesGoal.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm mt-1 text-gray-500">
-                  {goalProgress.pagesGoal.progress >= 100
-                    ? "✅ Goal Achieved!"
-                    : goalProgress.pagesGoal.achieved === 0 &&
-                        timeRange === "today"
-                      ? "📖 No pages read yet"
-                      : `${goalProgress.pagesGoal.progress}% of goal`}
-                </p>
-              </div>
 
-              {/* Coding Goal */}
-              <div className="border rounded-xl p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-900 dark:to-purple-950">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">
-                    {goalProgress.codingGoal.label}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {goalProgress.codingGoal.achieved} /{" "}
-                    {goalProgress.codingGoal.target} hrs
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      goalProgress.codingGoal.progress >= 100
-                        ? "bg-green-500"
-                        : "bg-purple-500"
-                    }`}
-                    style={{ width: `${goalProgress.codingGoal.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm mt-1 text-gray-500">
-                  {goalProgress.codingGoal.progress >= 100
-                    ? "✅ Goal Achieved!"
-                    : goalProgress.codingGoal.achieved === 0 &&
-                        timeRange === "today"
-                      ? "💻 No coding done yet"
-                      : `${goalProgress.codingGoal.progress}% of goal`}
-                </p>
-              </div>
-
-              {/* Posts Goal */}
-              <div className="border rounded-xl p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-900 dark:to-emerald-950">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">
-                    {goalProgress.postsGoal.label}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {goalProgress.postsGoal.achieved} /{" "}
-                    {goalProgress.postsGoal.target} posts
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      goalProgress.postsGoal.progress >= 100
-                        ? "bg-green-500"
-                        : "bg-emerald-500"
-                    }`}
-                    style={{ width: `${goalProgress.postsGoal.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm mt-1 text-gray-500">
-                  {goalProgress.postsGoal.progress >= 100
-                    ? "✅ Goal Achieved!"
-                    : goalProgress.postsGoal.achieved === 0 &&
-                        timeRange === "today"
-                      ? "📱 No posts yet"
-                      : `${goalProgress.postsGoal.progress}% of goal`}
-                </p>
-              </div>
-
-              {/* Leads Goal */}
-              <div className="border rounded-xl p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-slate-900 dark:to-amber-950">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">
-                    {goalProgress.leadsGoal.label}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {goalProgress.leadsGoal.achieved} /{" "}
-                    {goalProgress.leadsGoal.target} leads
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      goalProgress.leadsGoal.progress >= 100
-                        ? "bg-green-500"
-                        : "bg-yellow-500"
-                    }`}
-                    style={{ width: `${goalProgress.leadsGoal.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm mt-1 text-gray-500">
-                  {goalProgress.leadsGoal.progress >= 100
-                    ? "✅ Goal Achieved!"
-                    : goalProgress.leadsGoal.achieved === 0 &&
-                        timeRange === "today"
-                      ? "📊 No leads yet"
-                      : `${goalProgress.leadsGoal.progress}% of goal`}
-                </p>
-              </div>
-
-              {/* Revenue Goal */}
-              <div className="border rounded-xl p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-slate-900 dark:to-rose-950">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">
-                    {goalProgress.revenueGoal.label}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    ₹{goalProgress.revenueGoal.achieved} / ₹
-                    {goalProgress.revenueGoal.target}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      goalProgress.revenueGoal.progress >= 100
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                    }`}
-                    style={{ width: `${goalProgress.revenueGoal.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm mt-1 text-gray-500">
-                  {goalProgress.revenueGoal.progress >= 100
-                    ? "✅ Goal Achieved!"
-                    : goalProgress.revenueGoal.achieved === 0 &&
-                        timeRange === "today"
-                      ? "💰 No revenue yet"
-                      : `${goalProgress.revenueGoal.progress}% of goal`}
-                </p>
-              </div>
-
-              {/* Clients Goal */}
-              <div className="border rounded-xl p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">
-                    {goalProgress.clientsGoal.label}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {goalProgress.clientsGoal.achieved} /{" "}
-                    {goalProgress.clientsGoal.target} clients
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-500 ${
-                      goalProgress.clientsGoal.progress >= 100
-                        ? "bg-green-500"
-                        : "bg-teal-500"
-                    }`}
-                    style={{ width: `${goalProgress.clientsGoal.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm mt-1 text-gray-500">
-                  {goalProgress.clientsGoal.progress >= 100
-                    ? "✅ Goal Achieved!"
-                    : goalProgress.clientsGoal.achieved === 0 &&
-                        timeRange === "today"
-                      ? "👥 No clients yet"
-                      : `${goalProgress.clientsGoal.progress}% of goal`}
-                </p>
-              </div>
+          {/* Coding Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-900 dark:to-purple-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.codingGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.codingGoal.achieved} /{" "}
+                {goalProgress.codingGoal.target} hrs
+              </span>
             </div>
-
-            {/* Consistency Goal */}
-            <div className="mt-4 border rounded-xl p-4 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-slate-800 dark:to-slate-900">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold">
-                  {goalProgress.consistency.label}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {goalProgress.consistency.daysLogged} /{" "}
-                  {goalProgress.consistency.targetDays} days
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                <div
-                  className={`h-3 rounded-full transition-all duration-500 ${
-                    goalProgress.consistency.progress >= 80
-                      ? "bg-green-500"
-                      : goalProgress.consistency.progress >= 50
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                  }`}
-                  style={{ width: `${goalProgress.consistency.progress}%` }}
-                ></div>
-              </div>
-              <p className="text-sm mt-1 text-gray-500">
-                {goalProgress.consistency.daysLogged === 0 &&
-                timeRange === "today"
-                  ? "📅 Start tracking today!"
-                  : goalProgress.consistency.progress >= 80
-                    ? "🔥 Great consistency!"
-                    : goalProgress.consistency.progress >= 50
-                      ? "💪 Keep going!"
-                      : "📈 Try to be more consistent"}
-              </p>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.codingGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-purple-500"
+                }`}
+                style={{ width: `${goalProgress.codingGoal.progress}%` }}
+              ></div>
             </div>
-          </>
-        )}
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.codingGoal.progress >= 100
+                ? "✅ Goal Achieved! Great work!"
+                : goalProgress.codingGoal.achieved === 0
+                  ? "💻 Start coding now!"
+                  : `${goalProgress.codingGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              Code {GOALS.daily.coding} hours daily
+            </div>
+          </div>
+
+          {/* Exercise Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-900 dark:to-emerald-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.exerciseGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.exerciseGoal.achieved} /{" "}
+                {goalProgress.exerciseGoal.target} min
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.exerciseGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-emerald-500"
+                }`}
+                style={{ width: `${goalProgress.exerciseGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.exerciseGoal.progress >= 100
+                ? "✅ Goal Achieved! Keep it up!"
+                : goalProgress.exerciseGoal.achieved === 0
+                  ? "🏋️ Time to move!"
+                  : `${goalProgress.exerciseGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              Exercise {GOALS.daily.exercise} minutes daily
+            </div>
+          </div>
+
+          {/* Meditation Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.meditateGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.meditateGoal.achieved} /{" "}
+                {goalProgress.meditateGoal.target} min
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.meditateGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-teal-500"
+                }`}
+                style={{ width: `${goalProgress.meditateGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.meditateGoal.progress >= 100
+                ? "✅ Goal Achieved! Peaceful!"
+                : goalProgress.meditateGoal.achieved === 0
+                  ? "🧘 Take a moment to breathe"
+                  : `${goalProgress.meditateGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              Meditate {GOALS.daily.meditate} minutes daily
+            </div>
+          </div>
+
+          {/* Posts Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-slate-900 dark:to-emerald-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.postsGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.postsGoal.achieved} /{" "}
+                {goalProgress.postsGoal.target} posts
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.postsGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-emerald-500"
+                }`}
+                style={{ width: `${goalProgress.postsGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.postsGoal.progress >= 100
+                ? "✅ Goal Achieved! Social butterfly!"
+                : goalProgress.postsGoal.achieved === 0
+                  ? "📱 Share something today"
+                  : `${goalProgress.postsGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              Post {GOALS.weekly.posts} times weekly
+            </div>
+          </div>
+
+          {/* Meetings Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-slate-900 dark:to-amber-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.meetingsGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.meetingsGoal.achieved} /{" "}
+                {goalProgress.meetingsGoal.target} meetings
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.meetingsGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-amber-500"
+                }`}
+                style={{ width: `${goalProgress.meetingsGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.meetingsGoal.progress >= 100
+                ? "✅ Goal Achieved! Great networking!"
+                : goalProgress.meetingsGoal.achieved === 0
+                  ? "🤝 Schedule a meeting"
+                  : `${goalProgress.meetingsGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              {GOALS.weekly.meetings} client meetings weekly
+            </div>
+          </div>
+
+          {/* Leads Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-slate-900 dark:to-amber-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.leadsGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.leadsGoal.achieved} /{" "}
+                {goalProgress.leadsGoal.target} leads
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.leadsGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-yellow-500"
+                }`}
+                style={{ width: `${goalProgress.leadsGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.leadsGoal.progress >= 100
+                ? "✅ Goal Achieved! Leads flowing!"
+                : goalProgress.leadsGoal.achieved === 0
+                  ? "📊 Generate some leads"
+                  : `${goalProgress.leadsGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              {GOALS.monthly.leads} leads monthly
+            </div>
+          </div>
+
+          {/* Revenue Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-red-50 to-rose-50 dark:from-slate-900 dark:to-rose-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.revenueGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                ₹{goalProgress.revenueGoal.achieved} / ₹
+                {goalProgress.revenueGoal.target}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.revenueGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-red-500"
+                }`}
+                style={{ width: `${goalProgress.revenueGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.revenueGoal.progress >= 100
+                ? "✅ Goal Achieved! Money maker!"
+                : goalProgress.revenueGoal.achieved === 0
+                  ? "💰 Start earning today"
+                  : `${goalProgress.revenueGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              ₹{GOALS.monthly.revenue} monthly revenue
+            </div>
+          </div>
+
+          {/* Clients Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.clientsGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.clientsGoal.achieved} /{" "}
+                {goalProgress.clientsGoal.target} clients
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.clientsGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-teal-500"
+                }`}
+                style={{ width: `${goalProgress.clientsGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.clientsGoal.progress >= 100
+                ? "✅ Goal Achieved! Client magnet!"
+                : goalProgress.clientsGoal.achieved === 0
+                  ? "👥 Get your first client"
+                  : `${goalProgress.clientsGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              {GOALS.monthly.clients} new clients monthly
+            </div>
+          </div>
+
+          {/* Content Goal */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-slate-900 dark:to-violet-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.contentGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.contentGoal.achieved} /{" "}
+                {goalProgress.contentGoal.target} pieces
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.contentGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-violet-500"
+                }`}
+                style={{ width: `${goalProgress.contentGoal.progress}%` }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.contentGoal.progress >= 100
+                ? "✅ Goal Achieved! Content creator!"
+                : goalProgress.contentGoal.achieved === 0
+                  ? "✍️ Write your first piece"
+                  : `${goalProgress.contentGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              {GOALS.monthly.content} content pieces monthly
+            </div>
+          </div>
+        </div>
+
+        {/* Consistency Goal */}
+        <div className="mt-6 border-2 rounded-2xl p-6 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-slate-800 dark:to-slate-900 shadow-sm">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-lg font-semibold">
+              {goalProgress.consistency.label}
+            </span>
+            <span className="text-base text-gray-500">
+              {goalProgress.consistency.daysLogged} /{" "}
+              {goalProgress.consistency.targetDays} days
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+            <div
+              className={`h-4 rounded-full transition-all duration-700 ${
+                goalProgress.consistency.progress >= 80
+                  ? "bg-green-500"
+                  : goalProgress.consistency.progress >= 50
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+              }`}
+              style={{ width: `${goalProgress.consistency.progress}%` }}
+            ></div>
+          </div>
+          <p className="text-base mt-2 text-gray-500">
+            {goalProgress.consistency.daysLogged === 0
+              ? "📅 Start tracking today!"
+              : goalProgress.consistency.progress >= 80
+                ? "🔥 Great consistency! You're on fire!"
+                : goalProgress.consistency.progress >= 50
+                  ? "💪 Keep going! You're doing great!"
+                  : "📈 Try to be more consistent"}
+          </p>
+        </div>
       </div>
+
+      {/* Stat Cards */}
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
         <StatCard title="Revenue" value={`₹${metrics.totalRevenue}`} />
         <StatCard title="Leads" value={metrics.totalLeads} />
@@ -1236,7 +1769,6 @@ export default function Dashboard() {
           value={`₹${metrics.highestRevenue}`}
         />
 
-        {/* Dynamic Book/Page Display */}
         {timeRange === "today" || timeRange === "week" ? (
           <StatCard title="Pages Read" value={`${metrics.totalbookPage} 📄`} />
         ) : (
@@ -1250,43 +1782,45 @@ export default function Dashboard() {
         <StatCard title="Performance" value={`${performanceScore}%`} />
       </div>
 
+      {/* No Data State */}
       {(!Array.isArray(filteredEntries) || filteredEntries.length === 0) && (
-        <div className="border rounded-xl p-10 text-center mb-10">
-          <h2 className="text-2xl font-semibold">No data available</h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-3">
+        <div className="border-2 rounded-2xl p-12 text-center mb-10">
+          <h2 className="text-3xl font-semibold">📭 No data available</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-3 text-lg">
             There are no entries for the selected period.
           </p>
           <button
             onClick={() => setTimeRange("all")}
-            className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            className="mt-6 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors text-base font-medium shadow-sm"
           >
             View All Time
           </button>
         </div>
       )}
 
+      {/* Best Day */}
       {metrics.bestDay &&
         Array.isArray(filteredEntries) &&
         filteredEntries.length > 0 && (
-          <div className="mb-10 rounded-xl border p-6 bg-gradient-to-r from-green-50 to-green-100 dark:from-slate-900 dark:to-slate-800">
-            <h2 className="text-xl font-bold">🏆 Best Performing Day</h2>
-            <p className="mt-3">
+          <div className="mb-10 rounded-2xl border-2 p-6 bg-gradient-to-r from-green-50 to-green-100 dark:from-slate-900 dark:to-slate-800 shadow-sm">
+            <h2 className="text-2xl font-bold">🏆 Best Performing Day</h2>
+            <p className="mt-3 text-lg">
               <strong>
                 {metrics.bestDay.date
                   ? formatDate(metrics.bestDay.date)
                   : "N/A"}
               </strong>
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 mt-6 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 mt-6 gap-6">
               <div>
                 Revenue
-                <h3 className="font-bold">
+                <h3 className="text-2xl font-bold">
                   ₹{safeNumber(metrics.bestDay.revenue)}
                 </h3>
               </div>
               <div>
                 Clients
-                <h3 className="font-bold">
+                <h3 className="text-2xl font-bold">
                   {safeNumber(metrics.bestDay.clients)}
                 </h3>
               </div>
@@ -1294,7 +1828,7 @@ export default function Dashboard() {
                 {timeRange === "today" || timeRange === "week"
                   ? "Pages"
                   : "Coding"}
-                <h3 className="font-bold">
+                <h3 className="text-2xl font-bold">
                   {timeRange === "today" || timeRange === "week"
                     ? safeNumber(metrics.bestDay.bookPage)
                     : safeNumber(metrics.bestDay.coding)}
@@ -1302,7 +1836,7 @@ export default function Dashboard() {
               </div>
               <div>
                 Post
-                <h3 className="font-bold">
+                <h3 className="text-2xl font-bold">
                   {safeNumber(metrics.bestDay.post)}
                 </h3>
               </div>
@@ -1310,6 +1844,7 @@ export default function Dashboard() {
           </div>
         )}
 
+      {/* Business Health */}
       {Array.isArray(filteredEntries) && filteredEntries.length > 0 && (
         <BusinessHealth
           businessHealth={trends.businessHealth}
@@ -1319,6 +1854,7 @@ export default function Dashboard() {
         />
       )}
 
+      {/* Charts */}
       {chartData && chartData.length > 0 && (
         <div className="grid xl:grid-cols-2 gap-8 my-12">
           <TrendChart
@@ -1364,9 +1900,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-        <h2 className="text-2xl font-semibold">Recent Entries</h2>
-        <span className="text-gray-500 dark:text-gray-400">
+      {/* Recent Entries */}
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <h2 className="text-3xl font-bold">📝 Recent Entries</h2>
+        <span className="text-gray-500 dark:text-gray-400 text-base">
           Showing{" "}
           {Array.isArray(filteredEntries)
             ? Math.min(filteredEntries.length, ENTRIES_PER_PAGE)
@@ -1376,73 +1913,208 @@ export default function Dashboard() {
       </div>
 
       {!Array.isArray(entries) || entries.length === 0 ? (
-        <div className="text-center py-16 border rounded-xl">
-          <h3 className="text-2xl font-semibold">No Entries Yet</h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
+        <div className="text-center py-16 border-2 rounded-2xl">
+          <h3 className="text-3xl font-semibold">📝 No Entries Yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-3 text-lg">
             Create your first journal entry.
           </p>
         </div>
       ) : (
         <>
-          <div className="space-y-5">
+          <div className="space-y-6">
             {paginatedEntries.map((entry) => (
               <div
                 key={entry._id || Math.random()}
-                className="border rounded-xl p-5 shadow-sm"
+                className="border-2 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold">
-                    {entry.date ? formatDate(entry.date) : "Invalid Date"}
-                  </h3>
-                  <button
-                    onClick={() => deleteEntry(entry._id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
+                {editingEntry === entry._id ? (
+                  // Edit Mode
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-bold">✏️ Edit Entry</h3>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={cancelEdit}
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-xl transition-colors text-base"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => saveEdit(entry._id)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl transition-colors text-base"
+                        >
+                          💾 Save
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Date
+                        </label>
+                        <input
+                          type="date"
+                          name="date"
+                          value={editFormData?.date || ""}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Revenue
+                        </label>
+                        <input
+                          type="number"
+                          name="revenue"
+                          value={editFormData?.revenue || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Leads
+                        </label>
+                        <input
+                          type="number"
+                          name="leads"
+                          value={editFormData?.leads || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Clients
+                        </label>
+                        <input
+                          type="number"
+                          name="clients"
+                          value={editFormData?.clients || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Coding (hrs)
+                        </label>
+                        <input
+                          type="number"
+                          name="coding"
+                          value={editFormData?.coding || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                          step="0.5"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Post
+                        </label>
+                        <input
+                          type="number"
+                          name="post"
+                          value={editFormData?.post || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Pages Read
+                        </label>
+                        <input
+                          type="number"
+                          name="bookPage"
+                          value={editFormData?.bookPage || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-sm font-medium block mb-1">
+                          Note
+                        </label>
+                        <textarea
+                          name="note"
+                          value={editFormData?.note || ""}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                          rows="2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // View Mode
+                  <>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-bold">
+                        📅{" "}
+                        {entry.date ? formatDate(entry.date) : "Invalid Date"}
+                      </h3>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => startEdit(entry)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl transition-colors text-base"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => deleteEntry(entry._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-colors text-base"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <p>
-                    <strong>Revenue:</strong> ₹{safeNumber(entry.revenue)}
-                  </p>
-                  <p>
-                    <strong>Leads:</strong> {safeNumber(entry.leads)}
-                  </p>
-                  <p>
-                    <strong>Clients:</strong> {safeNumber(entry.clients)}
-                  </p>
-                  <p>
-                    <strong>Coding:</strong> {safeNumber(entry.coding)} hrs
-                  </p>
-                  <p>
-                    <strong>Post:</strong> {safeNumber(entry.post)}
-                  </p>
-                  <p>
-                    <strong>bookPage:</strong> {safeNumber(entry.bookPage)}
-                  </p>
-                </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-base">
+                      <p>
+                        <strong>Revenue:</strong> ₹{safeNumber(entry.revenue)}
+                      </p>
+                      <p>
+                        <strong>Leads:</strong> {safeNumber(entry.leads)}
+                      </p>
+                      <p>
+                        <strong>Clients:</strong> {safeNumber(entry.clients)}
+                      </p>
+                      <p>
+                        <strong>Coding:</strong> {safeNumber(entry.coding)} hrs
+                      </p>
+                      <p>
+                        <strong>Post:</strong> {safeNumber(entry.post)}
+                      </p>
+                      <p>
+                        <strong>Pages:</strong> {safeNumber(entry.bookPage)}
+                      </p>
+                    </div>
 
-                <div className="mt-4">
-                  <strong>Note</strong>
-                  <p className="mt-1 text-gray-600 dark:text-gray-400">
-                    {entry.note || "No notes"}
-                  </p>
-                </div>
+                    <div className="mt-4">
+                      <strong className="text-base">📝 Note</strong>
+                      <p className="mt-2 text-gray-600 dark:text-gray-400 text-base">
+                        {entry.note || "No notes"}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
 
+          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-8">
+            <div className="flex justify-center items-center gap-3 mt-8">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="px-6 py-3 border-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-base font-medium"
               >
-                Previous
+                ⬅️ Previous
               </button>
-              <span className="px-4 py-2">
+              <span className="px-5 py-3 text-base font-medium">
                 Page {currentPage} of {totalPages}
               </span>
               <button
@@ -1450,9 +2122,9 @@ export default function Dashboard() {
                   setCurrentPage(Math.min(totalPages, currentPage + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="px-6 py-3 border-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-base font-medium"
               >
-                Next
+                Next ➡️
               </button>
             </div>
           )}
