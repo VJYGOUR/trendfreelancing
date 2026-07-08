@@ -2,7 +2,7 @@ import Entry from "../models/Entry.js";
 
 export const createEntry = async (req, res) => {
   try {
-    const { date, leads, clients, revenue, mood, stress, confidence, note } =
+    const { date, leads, clients, revenue, coding, post, bookPage, note } =
       req.body;
     console.log(leads);
     const userId = req.userId;
@@ -13,9 +13,9 @@ export const createEntry = async (req, res) => {
       leads,
       clients,
       revenue,
-      mood,
-      stress,
-      confidence,
+      coding,
+      post,
+      bookPage,
       note,
     });
 

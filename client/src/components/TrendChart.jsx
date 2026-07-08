@@ -8,7 +8,12 @@ import {
   CartesianGrid,
 } from "recharts";
 
-export default function TrendChart({ title, data, dataKey }) {
+export default function TrendChart({
+  title,
+  data,
+  dataKey,
+  xAxisKey = "label",
+}) {
   return (
     <div
       className="
@@ -41,7 +46,7 @@ export default function TrendChart({ title, data, dataKey }) {
           <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
 
           <XAxis
-            dataKey="date"
+            dataKey={xAxisKey}
             tick={{
               fill: "currentColor",
             }}
@@ -64,12 +69,8 @@ export default function TrendChart({ title, data, dataKey }) {
             type="monotone"
             dataKey={dataKey}
             strokeWidth={3}
-            dot={{
-              r: 4,
-            }}
-            activeDot={{
-              r: 7,
-            }}
+            dot={{ r: 4 }}
+            activeDot={{ r: 7 }}
           />
         </LineChart>
       </ResponsiveContainer>

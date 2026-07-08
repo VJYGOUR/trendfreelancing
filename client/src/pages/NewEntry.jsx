@@ -12,9 +12,9 @@ export default function NewEntry() {
     leads: 0,
     clients: 0,
     revenue: 0,
-    mood: 5,
-    stress: 5,
-    confidence: 5,
+    coding: 5,
+    post: 5,
+    bookPage: 5,
     note: "",
   });
 
@@ -150,42 +150,42 @@ export default function NewEntry() {
 
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
-              <label className={labelStyle}>Mood (1-10)</label>
+              <label className={labelStyle}>coding (1-10)</label>
 
               <input
                 type="number"
-                name="mood"
-                min="1"
+                name="coding"
+                min="0"
                 max="10"
-                value={formData.mood}
+                value={formData.coding}
                 onChange={handleChange}
                 className={inputStyle}
               />
             </div>
 
             <div>
-              <label className={labelStyle}>Stress (1-10)</label>
+              <label className={labelStyle}>post (1-10)</label>
 
               <input
                 type="number"
-                name="stress"
-                min="1"
+                name="post"
+                min="0"
                 max="10"
-                value={formData.stress}
+                value={formData.post}
                 onChange={handleChange}
                 className={inputStyle}
               />
             </div>
 
             <div>
-              <label className={labelStyle}>Confidence (1-10)</label>
+              <label className={labelStyle}>bookPage (1-10)</label>
 
               <input
                 type="number"
-                name="confidence"
-                min="1"
-                max="10"
-                value={formData.confidence}
+                name="bookPage"
+                min="0"
+                max="1000"
+                value={formData.bookPage}
                 onChange={handleChange}
                 className={inputStyle}
               />

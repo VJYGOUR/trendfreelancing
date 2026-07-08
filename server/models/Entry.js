@@ -27,22 +27,22 @@ const entrySchema = new mongoose.Schema(
       default: 0,
     },
 
-    mood: {
+    coding: {
       type: Number,
-      min: 1,
+      min: 0,
       max: 10,
     },
 
-    stress: {
+    post: {
       type: Number,
-      min: 1,
+      min: 0,
       max: 10,
     },
 
-    confidence: {
+    bookPage: {
       type: Number,
-      min: 1,
-      max: 10,
+      min: 0,
+      max: 1000,
     },
 
     note: {
