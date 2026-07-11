@@ -1,6 +1,8 @@
 import { getAuth } from "@clerk/express";
 
 export const protect = (req, res, next) => {
+  const uId = req.auth;
+  console.log(uId);
   const auth = getAuth(req);
 
   if (!auth.userId) {
@@ -8,7 +10,7 @@ export const protect = (req, res, next) => {
       message: "Unauthorized",
     });
   }
-
+  console.log(auth.userId);
   req.userId = auth.userId;
 
   next();

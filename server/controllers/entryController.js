@@ -12,11 +12,12 @@ export const createEntry = async (req, res) => {
       bookPage,
       exercise,
       meditation,
+      nevillegoddard,
       note,
     } = req.body;
-    console.log(leads);
+
     const userId = req.userId;
-    console.log("-----", userId);
+
     const entry = await Entry.create({
       userId,
       date,
@@ -28,13 +29,13 @@ export const createEntry = async (req, res) => {
       bookPage,
       exercise: exercise || 0,
       meditation: meditation || 0,
+      nevillegoddard,
       note,
     });
-    console.log(entry);
+
     res.status(201).json(entry);
   } catch (error) {
     res.status(500).json({ message: error.message });
-    console.log(error.message);
   }
 };
 export const getEntries = async (req, res) => {
@@ -42,7 +43,7 @@ export const getEntries = async (req, res) => {
     const entries = await Entry.find({
       userId: req.userId,
     }).sort({ date: -1 });
-    console.log(entries);
+
     res.json(entries);
   } catch (error) {
     res.status(500).json({
@@ -88,6 +89,7 @@ export const updateEntry = async (req, res) => {
       bookPage,
       exercise,
       meditation,
+      nevillegoddard,
       note,
     } = req.body;
 
@@ -111,6 +113,7 @@ export const updateEntry = async (req, res) => {
     if (bookPage !== undefined) entry.bookPage = bookPage;
     if (exercise !== undefined) entry.exercise = exercise;
     if (meditation !== undefined) entry.meditation = meditation;
+     if (nevillegoddard !== undefined) entry.nevillegoddard = nevillegoddard;
     if (note !== undefined) entry.note = note;
 
     await entry.save();

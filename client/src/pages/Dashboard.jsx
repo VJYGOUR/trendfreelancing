@@ -56,7 +56,8 @@ const GOALS = {
     pages: 10,
     coding: 2,
     exercise: 30,
-    meditate: 10,
+    meditation: 10,
+    nevillegoddard: 12,
   },
   weekly: {
     posts: 2,
@@ -248,7 +249,9 @@ function getTotalExercise(entries) {
 function getTotalMeditation(entries) {
   return entries.reduce((sum, e) => sum + safeNumber(e.meditation), 0);
 }
-
+function getTotalNevillegoddard(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.nevillegoddard), 0);
+}
 // ==========================
 // Utility Functions
 // ==========================
@@ -448,7 +451,8 @@ export default function Dashboard() {
       post: entry.post || 0,
       bookPage: entry.bookPage || 0,
       exercise: entry.exercise || 0, // ✅ ADD THIS
-      meditation: entry.meditation || 0, // ✅ ADD THIS
+      meditation: entry.meditation || 0,
+      nevillegoddard: entry.nevillegoddard || 0, // ✅ ADD THIS
       note: entry.note || "",
     });
   }, []);
@@ -579,6 +583,7 @@ export default function Dashboard() {
         bookPage: 0,
         exercise: 0, // ✅ ADD
         meditation: 0,
+        nevillegoddard: 0,
       }));
     }
 
@@ -610,6 +615,7 @@ export default function Dashboard() {
           bookPage: 0,
           exercise: 0, // ✅ ADD THIS
           meditation: 0,
+          nevillegoddard: 0,
           count: 0,
         };
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -629,6 +635,7 @@ export default function Dashboard() {
           groups[monthKey].bookPage += safeNumber(entry.bookPage);
           groups[monthKey].exercise += safeNumber(entry.exercise); // ✅ ADD
           groups[monthKey].meditation += safeNumber(entry.meditation);
+          groups[monthKey].nevillegoddard += safeNumber(entry.nevillegoddard);
           groups[monthKey].count++;
         }
       });
@@ -648,6 +655,7 @@ export default function Dashboard() {
             bookPage: 0,
             exercise: 0, // ✅ ADD
             meditation: 0,
+            nevillegoddard: 0,
             count: 0,
           };
         }
@@ -660,6 +668,7 @@ export default function Dashboard() {
         groups[label].bookPage += safeNumber(entry.bookPage);
         groups[label].exercise += safeNumber(entry.exercise); // ✅ ADD
         groups[label].meditation += safeNumber(entry.meditation);
+        groups[label].nevillegoddard += safeNumber(entry.nevillegoddard);
         groups[label].count++;
       });
     }
@@ -777,6 +786,7 @@ export default function Dashboard() {
           bookPage: 0,
           exercise: 0, // ✅ ADD
           meditation: 0,
+          nevillegoddard: 0,
         };
       }
 
@@ -787,6 +797,7 @@ export default function Dashboard() {
         bookPage: +groups[label].bookPage.toFixed(1), // ✅ SUM - not average
         exercise: +groups[label].exercise.toFixed(1), // ✅ SUM - not average
         meditation: +groups[label].meditation.toFixed(1),
+        nevillegoddard: +groups[label].nevillegoddard.toFixed(1),
       };
     });
   }, [filteredEntries, timeRange]);
@@ -837,6 +848,7 @@ export default function Dashboard() {
         bookPage: acc.bookPage + safeNumber(entry.bookPage),
         exercise: acc.exercise + safeNumber(entry.exercise), // ✅ ADD
         meditation: acc.meditation + safeNumber(entry.meditation),
+        nevillegoddard: acc.nevillegoddard + safeNumber(entry.nevillegoddard),
         count: acc.count + 1,
       }),
       {
@@ -848,6 +860,7 @@ export default function Dashboard() {
         bookPage: 0,
         exercise: 0, // ✅ ADD
         meditation: 0,
+        nevillegoddard: 0,
         count: 0,
       },
     );
@@ -922,6 +935,7 @@ export default function Dashboard() {
       totalbookPage: totals.bookPage,
       totalExercise: totals.exercise, // ✅ ADD
       totalMeditation: totals.meditation,
+      totalNevillegoddard: totals.nevillegoddard,
       bestDay,
       daysWithData,
       totalDays,
@@ -937,7 +951,8 @@ export default function Dashboard() {
         pagesGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         codingGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         exerciseGoal: { achieved: 0, target: 0, progress: 0, label: "" },
-        meditateGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        meditationGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        nevillegoddardGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         postsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         meetingsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         leadsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
@@ -1044,6 +1059,7 @@ export default function Dashboard() {
         bookPage: acc.bookPage + safeNumber(entry.bookPage),
         exercise: acc.exercise + safeNumber(entry.exercise), // ✅ FIXED - adds to accumulator
         meditation: acc.meditation + safeNumber(entry.meditation),
+        nevillegoddard: acc.nevillegoddard + safeNumber(entry.nevillegoddard),
         meetings: safeNumber(entry.meetings) || 0,
         content: safeNumber(entry.content) || 0,
       }),
@@ -1056,6 +1072,7 @@ export default function Dashboard() {
         bookPage: 0,
         exercise: 0,
         meditation: 0,
+        nevillegoddard: 0,
         meetings: 0,
         content: 0,
       },
@@ -1064,7 +1081,10 @@ export default function Dashboard() {
     const pageTarget = Math.round(GOALS.daily.pages * daysInRange);
     const codingTarget = Math.round(GOALS.daily.coding * daysInRange * 10) / 10;
     const exerciseTarget = Math.round(GOALS.daily.exercise * daysInRange);
-    const meditateTarget = Math.round(GOALS.daily.meditate * daysInRange);
+    const meditationTarget = Math.round(GOALS.daily.meditation * daysInRange);
+    const nevillegoddardTarget = Math.round(
+      GOALS.daily.nevillegoddard * daysInRange,
+    );
     const postsTarget = Math.round(GOALS.weekly.posts * weeksInRange);
     const meetingsTarget = Math.round(GOALS.weekly.meetings * weeksInRange);
     const leadsTarget = Math.round(GOALS.monthly.leads * monthsInRange);
@@ -1110,11 +1130,20 @@ export default function Dashboard() {
         progress: calculateProgress(totals.exercise, exerciseTarget),
         label: getTimeLabel("🏋️ Exercise"),
       },
-      meditateGoal: {
-        achieved: totals.meditation, // ✅ FIXED - was totals.meditate
-        target: meditateTarget,
-        progress: calculateProgress(totals.meditation, meditateTarget),
+      meditationGoal: {
+        achieved: totals.meditation, // ✅ FIXED - was totals.meditation
+        target: meditationTarget,
+        progress: calculateProgress(totals.meditation, meditationTarget),
         label: getTimeLabel("🧘 Meditation"),
+      },
+      nevillegoddardGoal: {
+        achieved: totals.nevillegoddard, // ✅ FIXED - was totals.meditation
+        target: nevillegoddardTarget,
+        progress: calculateProgress(
+          totals.nevillegoddard,
+          nevillegoddardTarget,
+        ),
+        label: getTimeLabel("🧘 nevillegoddard"),
       },
       postsGoal: {
         achieved: totals.post,
@@ -1327,6 +1356,7 @@ export default function Dashboard() {
         "bookPage",
         "exercise", // ✅ ADD
         "meditation", // ✅ ADD
+        "nevillegoddard",
         "Note",
       ];
       const csvRows = [
@@ -1345,6 +1375,7 @@ export default function Dashboard() {
             safeNumber(entry.bookPage),
             safeNumber(entry.exercise), // ✅ ADD
             safeNumber(entry.meditation), // ✅ ADD
+            safeNumber(entry.nevillegoddard),
             `"${note}"`,
           ].join(",");
         }),
@@ -1691,32 +1722,66 @@ export default function Dashboard() {
           <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950 hover:shadow-lg transition-shadow">
             <div className="flex justify-between items-center mb-3">
               <span className="text-lg font-semibold">
-                {goalProgress.meditateGoal.label}
+                {goalProgress.meditationGoal.label}
               </span>
               <span className="text-base text-gray-500">
-                {goalProgress.meditateGoal.achieved} /{" "}
-                {goalProgress.meditateGoal.target} min
+                {goalProgress.meditationGoal.achieved} /{" "}
+                {goalProgress.meditationGoal.target} min
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
               <div
                 className={`h-4 rounded-full transition-all duration-700 ${
-                  goalProgress.meditateGoal.progress >= 100
+                  goalProgress.meditationGoal.progress >= 100
                     ? "bg-green-500"
                     : "bg-teal-500"
                 }`}
-                style={{ width: `${goalProgress.meditateGoal.progress}%` }}
+                style={{ width: `${goalProgress.meditationGoal.progress}%` }}
               ></div>
             </div>
             <p className="text-base mt-2 text-gray-500">
-              {goalProgress.meditateGoal.progress >= 100
+              {goalProgress.meditationGoal.progress >= 100
                 ? "✅ Goal Achieved! Peaceful!"
-                : goalProgress.meditateGoal.achieved === 0
+                : goalProgress.meditationGoal.achieved === 0
                   ? "🧘 Take a moment to breathe"
-                  : `${goalProgress.meditateGoal.progress}% of goal`}
+                  : `${goalProgress.meditationGoal.progress}% of goal`}
             </p>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
-              Meditate {GOALS.daily.meditate} minutes daily
+              meditation {GOALS.daily.meditation} minutes daily
+            </div>
+          </div>
+          {/* NEVILLE */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.nevillegoddardGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.nevillegoddardGoal.achieved} /{" "}
+                {goalProgress.nevillegoddardGoal.target} min
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.nevillegoddardGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-teal-500"
+                }`}
+                style={{
+                  width: `${goalProgress.nevillegoddardGoal.progress}%`,
+                }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.nevillegoddardGoal.progress >= 100
+                ? "✅ Goal Achieved! Peaceful!"
+                : goalProgress.nevillegoddardGoal.achieved === 0
+                  ? "🧘 Take a moment to breathe"
+                  : `${goalProgress.nevillegoddardGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              nevillegoddard {GOALS.daily.nevillegoddard} minutes daily
             </div>
           </div>
 
@@ -1973,6 +2038,10 @@ export default function Dashboard() {
           title="Total Meditation"
           value={`${metrics.totalMeditation} min`}
         />{" "}
+        <StatCard
+          title="Total Manifestation"
+          value={`${metrics.totalNevillegoddard} min`}
+        />
         {/* ✅ ADD */}
         {timeRange === "today" || timeRange === "week" ? (
           <StatCard title="Pages Read" value={`${metrics.totalbookPage} 📄`} />
@@ -2101,6 +2170,12 @@ export default function Dashboard() {
             title="Meditation Trend" // ✅ ADD
             data={chartData}
             dataKey="meditation"
+            xAxisKey="label"
+          />
+          <TrendChart
+            title="Manifestation Trend" // ✅ ADD
+            data={chartData}
+            dataKey="nevillegoddard"
             xAxisKey="label"
           />
           <TrendChart
@@ -2278,6 +2353,20 @@ export default function Dashboard() {
                           max="120"
                         />
                       </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Manifestation (min)
+                        </label>
+                        <input
+                          type="number"
+                          name="nevillegoddard"
+                          value={editFormData?.nevillegoddard || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                          min="0"
+                          max="120"
+                        />
+                      </div>
                       <div className="col-span-2">
                         <label className="text-sm font-medium block mb-1">
                           Note
@@ -2342,6 +2431,10 @@ export default function Dashboard() {
                       <p>
                         <strong>Meditation:</strong>{" "}
                         {safeNumber(entry.meditation)} min
+                      </p>
+                      <p>
+                        <strong>Manifestation:</strong>{" "}
+                        {safeNumber(entry.nevillegoddard)} min
                       </p>
                     </div>
 

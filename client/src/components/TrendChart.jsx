@@ -14,6 +14,9 @@ export default function TrendChart({
   dataKey,
   xAxisKey = "label",
 }) {
+  // console.log("TrendChart data:", data);
+  // console.log("dataKey being used:", dataKey);
+  // console.log("xAxisKey being used:", xAxisKey);
   return (
     <div
       className="

@@ -17,6 +17,7 @@ export default function NewEntry() {
     bookPage: 0,
     exercise: 0,
     meditation: 0,
+    nevillegoddard: 0,
     note: "",
   });
 
@@ -219,6 +220,19 @@ export default function NewEntry() {
                 min="0"
                 max="120"
                 value={formData.meditation}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+            </div>
+            <div>
+              <label className={labelStyle}>Nevillegoddard (Minutes)</label>
+
+              <input
+                type="number"
+                name="nevillegoddard"
+                min="0"
+                max="120"
+                value={formData.nevillegoddard}
                 onChange={handleChange}
                 className={inputStyle}
               />
