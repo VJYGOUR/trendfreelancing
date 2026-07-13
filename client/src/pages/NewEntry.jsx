@@ -18,6 +18,7 @@ export default function NewEntry() {
     exercise: 0,
     meditation: 0,
     nevillegoddard: 0,
+    expression:0,
     note: "",
   });
 
@@ -233,6 +234,19 @@ export default function NewEntry() {
                 min="0"
                 max="120"
                 value={formData.nevillegoddard}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+            </div>
+             <div>
+              <label className={labelStyle}>Expression (Minutes)</label>
+
+              <input
+                type="number"
+                name="expression"
+                min="0"
+                max="120"
+                value={formData.expression}
                 onChange={handleChange}
                 className={inputStyle}
               />

@@ -58,6 +58,7 @@ const GOALS = {
     exercise: 30,
     meditation: 10,
     nevillegoddard: 12,
+    expression: 45,
   },
   weekly: {
     posts: 2,
@@ -251,6 +252,9 @@ function getTotalMeditation(entries) {
 }
 function getTotalNevillegoddard(entries) {
   return entries.reduce((sum, e) => sum + safeNumber(e.nevillegoddard), 0);
+}
+function getTotalExpression(entries) {
+  return entries.reduce((sum, e) => sum + safeNumber(e.expression), 0);
 }
 // ==========================
 // Utility Functions
@@ -453,6 +457,7 @@ export default function Dashboard() {
       exercise: entry.exercise || 0, // ✅ ADD THIS
       meditation: entry.meditation || 0,
       nevillegoddard: entry.nevillegoddard || 0, // ✅ ADD THIS
+      expression: entry.expression || 0,
       note: entry.note || "",
     });
   }, []);
@@ -584,6 +589,7 @@ export default function Dashboard() {
         exercise: 0, // ✅ ADD
         meditation: 0,
         nevillegoddard: 0,
+        expression: 0,
       }));
     }
 
@@ -616,6 +622,7 @@ export default function Dashboard() {
           exercise: 0, // ✅ ADD THIS
           meditation: 0,
           nevillegoddard: 0,
+          expression: 0,
           count: 0,
         };
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -636,6 +643,7 @@ export default function Dashboard() {
           groups[monthKey].exercise += safeNumber(entry.exercise); // ✅ ADD
           groups[monthKey].meditation += safeNumber(entry.meditation);
           groups[monthKey].nevillegoddard += safeNumber(entry.nevillegoddard);
+          groups[monthKey].expression += safeNumber(entry.expression);
           groups[monthKey].count++;
         }
       });
@@ -656,6 +664,7 @@ export default function Dashboard() {
             exercise: 0, // ✅ ADD
             meditation: 0,
             nevillegoddard: 0,
+            expression: 0,
             count: 0,
           };
         }
@@ -669,6 +678,7 @@ export default function Dashboard() {
         groups[label].exercise += safeNumber(entry.exercise); // ✅ ADD
         groups[label].meditation += safeNumber(entry.meditation);
         groups[label].nevillegoddard += safeNumber(entry.nevillegoddard);
+        groups[label].expression += safeNumber(entry.expression);
         groups[label].count++;
       });
     }
@@ -787,6 +797,7 @@ export default function Dashboard() {
           exercise: 0, // ✅ ADD
           meditation: 0,
           nevillegoddard: 0,
+          expression: 0,
         };
       }
 
@@ -798,6 +809,7 @@ export default function Dashboard() {
         exercise: +groups[label].exercise.toFixed(1), // ✅ SUM - not average
         meditation: +groups[label].meditation.toFixed(1),
         nevillegoddard: +groups[label].nevillegoddard.toFixed(1),
+        expression: +groups[label].expression.toFixed(1),
       };
     });
   }, [filteredEntries, timeRange]);
@@ -849,6 +861,7 @@ export default function Dashboard() {
         exercise: acc.exercise + safeNumber(entry.exercise), // ✅ ADD
         meditation: acc.meditation + safeNumber(entry.meditation),
         nevillegoddard: acc.nevillegoddard + safeNumber(entry.nevillegoddard),
+        expression: acc.expression + safeNumber(entry.expression),
         count: acc.count + 1,
       }),
       {
@@ -861,6 +874,7 @@ export default function Dashboard() {
         exercise: 0, // ✅ ADD
         meditation: 0,
         nevillegoddard: 0,
+        expression: 0,
         count: 0,
       },
     );
@@ -936,6 +950,7 @@ export default function Dashboard() {
       totalExercise: totals.exercise, // ✅ ADD
       totalMeditation: totals.meditation,
       totalNevillegoddard: totals.nevillegoddard,
+      totalExpression: totals.expression,
       bestDay,
       daysWithData,
       totalDays,
@@ -953,6 +968,7 @@ export default function Dashboard() {
         exerciseGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         meditationGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         nevillegoddardGoal: { achieved: 0, target: 0, progress: 0, label: "" },
+        expressionGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         postsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         meetingsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
         leadsGoal: { achieved: 0, target: 0, progress: 0, label: "" },
@@ -1060,6 +1076,7 @@ export default function Dashboard() {
         exercise: acc.exercise + safeNumber(entry.exercise), // ✅ FIXED - adds to accumulator
         meditation: acc.meditation + safeNumber(entry.meditation),
         nevillegoddard: acc.nevillegoddard + safeNumber(entry.nevillegoddard),
+        expression: acc.expression + safeNumber(entry.expression),
         meetings: safeNumber(entry.meetings) || 0,
         content: safeNumber(entry.content) || 0,
       }),
@@ -1073,6 +1090,7 @@ export default function Dashboard() {
         exercise: 0,
         meditation: 0,
         nevillegoddard: 0,
+        expression: 0,
         meetings: 0,
         content: 0,
       },
@@ -1085,6 +1103,7 @@ export default function Dashboard() {
     const nevillegoddardTarget = Math.round(
       GOALS.daily.nevillegoddard * daysInRange,
     );
+    const expressionTarget = Math.round(GOALS.daily.expression * daysInRange);
     const postsTarget = Math.round(GOALS.weekly.posts * weeksInRange);
     const meetingsTarget = Math.round(GOALS.weekly.meetings * weeksInRange);
     const leadsTarget = Math.round(GOALS.monthly.leads * monthsInRange);
@@ -1144,6 +1163,12 @@ export default function Dashboard() {
           nevillegoddardTarget,
         ),
         label: getTimeLabel("🧘 nevillegoddard"),
+      },
+      expressionGoal: {
+        achieved: totals.expression, // ✅ FIXED - was totals.meditation
+        target: expressionTarget,
+        progress: calculateProgress(totals.expression, expressionTarget),
+        label: getTimeLabel("🧘 expression"),
       },
       postsGoal: {
         achieved: totals.post,
@@ -1357,6 +1382,7 @@ export default function Dashboard() {
         "exercise", // ✅ ADD
         "meditation", // ✅ ADD
         "nevillegoddard",
+        "expression",
         "Note",
       ];
       const csvRows = [
@@ -1376,6 +1402,7 @@ export default function Dashboard() {
             safeNumber(entry.exercise), // ✅ ADD
             safeNumber(entry.meditation), // ✅ ADD
             safeNumber(entry.nevillegoddard),
+            safeNumber(entry.expression),
             `"${note}"`,
           ].join(",");
         }),
@@ -1784,7 +1811,40 @@ export default function Dashboard() {
               nevillegoddard {GOALS.daily.nevillegoddard} minutes daily
             </div>
           </div>
-
+          {/* EXPRESSION */}
+          <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-950 hover:shadow-lg transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-lg font-semibold">
+                {goalProgress.expressionGoal.label}
+              </span>
+              <span className="text-base text-gray-500">
+                {goalProgress.expressionGoal.achieved} /{" "}
+                {goalProgress.expressionGoal.target} min
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div
+                className={`h-4 rounded-full transition-all duration-700 ${
+                  goalProgress.expressionGoal.progress >= 100
+                    ? "bg-green-500"
+                    : "bg-teal-500"
+                }`}
+                style={{
+                  width: `${goalProgress.expressionGoal.progress}%`,
+                }}
+              ></div>
+            </div>
+            <p className="text-base mt-2 text-gray-500">
+              {goalProgress.expressionGoal.progress >= 100
+                ? "✅ Goal Achieved! Peaceful!"
+                : goalProgress.expressionGoal.achieved === 0
+                  ? "🧘 Take a moment to breathe"
+                  : `${goalProgress.expressionGoal.progress}% of goal`}
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-sm rounded-lg py-1.5 px-3 whitespace-nowrap z-10 shadow-lg">
+              expression {GOALS.daily.expression} minutes daily
+            </div>
+          </div>
           {/* Posts Goal */}
           <div className="group relative border-2 rounded-2xl p-5 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-slate-900 dark:to-emerald-950 hover:shadow-lg transition-shadow">
             <div className="flex justify-between items-center mb-3">
@@ -2042,6 +2102,10 @@ export default function Dashboard() {
           title="Total Manifestation"
           value={`${metrics.totalNevillegoddard} min`}
         />
+        <StatCard
+          title="Total Expression"
+          value={`${metrics.totalExpression} min`}
+        />
         {/* ✅ ADD */}
         {timeRange === "today" || timeRange === "week" ? (
           <StatCard title="Pages Read" value={`${metrics.totalbookPage} 📄`} />
@@ -2176,6 +2240,12 @@ export default function Dashboard() {
             title="Manifestation Trend" // ✅ ADD
             data={chartData}
             dataKey="nevillegoddard"
+            xAxisKey="label"
+          />
+          <TrendChart
+            title="Expression Trend" // ✅ ADD
+            data={chartData}
+            dataKey="expression"
             xAxisKey="label"
           />
           <TrendChart
@@ -2367,6 +2437,20 @@ export default function Dashboard() {
                           max="120"
                         />
                       </div>
+                      <div>
+                        <label className="text-sm font-medium block mb-1">
+                          Expression (min)
+                        </label>
+                        <input
+                          type="number"
+                          name="expression"
+                          value={editFormData?.expression || 0}
+                          onChange={handleEditChange}
+                          className="w-full p-3 border-2 rounded-xl text-base"
+                          min="0"
+                          max="120"
+                        />
+                      </div>
                       <div className="col-span-2">
                         <label className="text-sm font-medium block mb-1">
                           Note
@@ -2435,6 +2519,10 @@ export default function Dashboard() {
                       <p>
                         <strong>Manifestation:</strong>{" "}
                         {safeNumber(entry.nevillegoddard)} min
+                      </p>
+                      <p>
+                        <strong>Expression:</strong>{" "}
+                        {safeNumber(entry.expression)} min
                       </p>
                     </div>
 
