@@ -70,6 +70,12 @@ const entrySchema = new mongoose.Schema(
       max: 120, // minutes (max 2 hours)
       default: 0,
     },
+     occult: {
+      type: Number,
+      min: 0,
+      max: 120, // minutes (max 2 hours)
+      default: 0,
+    },
     note: {
       type: String,
       default: "",

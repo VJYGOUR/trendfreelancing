@@ -19,6 +19,7 @@ export default function NewEntry() {
     meditation: 0,
     nevillegoddard: 0,
     expression:0,
+    occult:0,
     note: "",
   });
 
@@ -247,6 +248,19 @@ export default function NewEntry() {
                 min="0"
                 max="120"
                 value={formData.expression}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+            </div>
+             <div>
+              <label className={labelStyle}>Occult (Minutes)</label>
+
+              <input
+                type="number"
+                name="occult"
+                min="0"
+                max="120"
+                value={formData.occult}
                 onChange={handleChange}
                 className={inputStyle}
               />

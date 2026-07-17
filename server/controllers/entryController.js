@@ -14,6 +14,7 @@ export const createEntry = async (req, res) => {
       meditation,
       nevillegoddard,
       expression,
+      occult,
       note,
     } = req.body;
 
@@ -32,6 +33,7 @@ export const createEntry = async (req, res) => {
       meditation: meditation || 0,
       nevillegoddard,
       expression,
+      occult,
       note,
     });
 
@@ -93,6 +95,7 @@ export const updateEntry = async (req, res) => {
       meditation,
       nevillegoddard,
       expression,
+      occult,
       note,
     } = req.body;
 
@@ -118,6 +121,7 @@ export const updateEntry = async (req, res) => {
     if (meditation !== undefined) entry.meditation = meditation;
      if (nevillegoddard !== undefined) entry.nevillegoddard = nevillegoddard;
      if (expression !== undefined) entry.expression = expression;
+      if (occult !== undefined) entry.occult = occult;
     if (note !== undefined) entry.note = note;
 
     await entry.save();

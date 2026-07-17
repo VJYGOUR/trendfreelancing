@@ -1,0 +1,5 @@
+If you want to add new fields
+1. Go to backend schema add new fields
+2. goto controllers update according to new addition
+3. goto new entry component update 
+4. goto dashboard update
